@@ -249,6 +249,73 @@ body{
 .flipper.flipped .face.back{position:relative;inset:auto}
 .flip-stage{cursor:pointer}
 
+/* ---------- the full reading: every passage in the session ---------- */
+.reading-head{text-align:center;margin:2px 0 18px}
+.reading-head h2{
+  font-family:var(--display);font-weight:500;font-size:22px;
+  color:var(--parchment);margin:0 0 5px;letter-spacing:.01em;
+}
+.reading-head p{margin:0;font-size:12px;font-weight:300;color:rgba(239,223,192,.55)}
+.voice-head{
+  display:flex;align-items:center;gap:10px;margin:22px 2px 12px;
+}
+.voice-head .line{flex:1;height:1px;background:rgba(212,169,78,.28)}
+.voice-head span{
+  font-family:var(--body);font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--gold);font-weight:400;
+}
+.passage{
+  display:block;width:100%;text-align:left;cursor:pointer;
+  background:var(--parchment);border:0;border-radius:7px;
+  padding:15px 16px 13px;margin-bottom:9px;
+  box-shadow:0 6px 16px rgba(0,0,0,.34);
+  font-family:var(--display);
+}
+.passage .q{
+  font-size:15px;line-height:1.5;color:var(--ink);margin:0 0 8px;
+  font-weight:400;
+}
+.passage .a{
+  font-family:var(--body);font-size:10.5px;font-style:italic;font-weight:300;
+  color:var(--ink-soft);margin:0;
+}
+.passage .n{
+  float:right;font-family:var(--body);font-size:9.5px;font-style:normal;
+  color:rgba(44,35,23,.4);letter-spacing:.05em;
+}
+.passage:focus-visible{outline:2px solid var(--gold-bright);outline-offset:2px}
+.passage.is-paraphrase{background:#e7d8bb}
+
+/* full-width link on the card back */
+.read-all{
+  display:block;width:100%;margin:14px 0 2px;padding:12px 14px;cursor:pointer;
+  background:rgba(11,18,41,.055);border:1px solid rgba(44,35,23,.22);
+  border-radius:6px;font-family:var(--body);font-size:12px;font-weight:400;
+  color:var(--ink);letter-spacing:.03em;text-align:center;
+}
+.read-all:hover{background:rgba(11,18,41,.1)}
+
+/* a counter instead of dots once a deck is long */
+/* this pager sits on the parchment card, so it takes ink colours */
+.wc-count{
+  text-align:center;font-family:var(--body);font-size:10.5px;font-weight:400;
+  color:var(--ink-soft);letter-spacing:.14em;text-transform:uppercase;
+  margin-top:4px;
+}
+.wc-arrows{display:flex;justify-content:center;gap:34px;margin-top:6px}
+.wc-arrows button{
+  background:none;border:0;color:var(--ink);opacity:.6;cursor:pointer;padding:6px;
+}
+.wc-arrows button:hover:not(:disabled){opacity:1}
+.wc-arrows button:disabled{opacity:.18;cursor:default}
+.wc-link{
+  display:none;margin:10px 20px 0;padding:8px 10px;border-radius:5px;
+  background:rgba(11,18,41,.07);border:1px solid rgba(44,35,23,.18);
+  font-family:var(--body);font-size:10.5px;color:var(--ink-soft);
+  word-break:break-all;text-align:center;user-select:all;
+}
+.wc-link.show{display:block}
+
 /* ---------- library: the cards fanned like a spread ---------- */
 .library-head{text-align:center;margin:6px 0 22px}
 .library-head h2{
@@ -601,6 +668,7 @@ body{
 
                     <div class="divider-label"><div class="line"></div><span>Wisdom Codes</span><div class="line"></div></div>
                     <div class="wisdom-list" id="s-wisdom"></div>
+          <div id="s-readall"></div>
 
                     <div class="ornament" style="margin:20px 0 6px"><div class="line"></div><span class="mark">✦</span><div class="line"></div></div>
                     <p style="text-align:center;font-size:11.5px;color:var(--ink-soft);font-style:italic;margin:0;font-weight:300" id="s-provenance"></p>
@@ -644,6 +712,7 @@ body{
         <div class="ornament" style="margin:14px 26px 12px"><div class="line"></div><span class="mark">✦</span><div class="line"></div></div>
         <p class="wc-quote" id="wc-quote"></p>
         <p class="wc-attrib" id="wc-attrib"></p>
+        <div class="wc-link" id="wc-link"></div>
         <div class="ornament" style="margin:18px 20px 12px"><div class="line"></div><span class="mark">✦</span><div class="line"></div></div>
 
         <div class="wc-actions">
@@ -667,6 +736,21 @@ body{
       </div>
     </section>
 
+
+    <!-- ==== FULL READING ============ -->
+    <section class="view" id="view-reading">
+      <div class="topbar">
+        <button class="roundbtn" data-go="card" aria-label="Back to the card">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 6 9 12l6 6"/></svg>
+        </button>
+        <div style="width:38px"></div>
+      </div>
+      <div class="reading-head">
+        <h2 id="reading-title">The Full Reading</h2>
+        <p id="reading-sub"></p>
+      </div>
+      <div id="reading-list"></div>
+    </section>
 
     <!-- ==== LIBRARY (the spread) ============ -->
     <section class="view" id="view-library">
@@ -789,6 +873,904 @@ const SESSIONS = [
         "quote": "The sky gives rain, the earth gives flowers",
         "attribution": "Rumi — in their words"
       }
+    ],
+    "wisdom_items": [
+      {
+        "n": 1,
+        "text": "What you seek is seeking you",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 2,
+        "text": "Friendship is like a tavern for the soul where you drink without fear of intoxication because no one is measuring how much",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 3,
+        "text": "True friends sit with your silence, dance with your sorrow, and laugh with your joy",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 4,
+        "text": "He was the drunk that never sobered",
+        "being": "Rumi",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Rumi"
+      },
+      {
+        "n": 5,
+        "text": "Do not take me too seriously; I'm only here to remind you that God hides in your laughter and in your kiss",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 6,
+        "text": "Intimacy is the vanishing of the veil between I and you",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 7,
+        "text": "Into me you see",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 8,
+        "text": "The obstacle is not outside or sweet-it is the veil you pull over your own heart and say, if I open, I will be hurt; if I trust, I'll lose",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 9,
+        "text": "The hurt and the loss are only shadows of your mind",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 10,
+        "text": "Intimacy is a natural state; you were born in union",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 11,
+        "text": "The obstacle is the illusion of separateness",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 12,
+        "text": "The belief that you must protect yourself",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 13,
+        "text": "Love is not the enemy; fear is the enemy dressed as a friend",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 14,
+        "text": "Drop the veil; even if your heart aches, let yourself be seen",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 15,
+        "text": "What you think will destroy you is the very thing that will free you",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 16,
+        "text": "When two souls or more forget themselves, joy is what spills in that moment",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 17,
+        "text": "The intimacy is the vanishing of the veil between I and you, tied to authenticity",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 18,
+        "text": "Abundance is how many times you can say yes to the mystery, yes to the shaky, yes to the divine-the divine lover hiding inside each glance",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 19,
+        "text": "When you are willing to say yes endlessly, you overflow",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 20,
+        "text": "We are all afraid to become foolish, and this is a little prison of our own",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 21,
+        "text": "Spin until the room's dizzy; sing until your throat cracks; and kiss until time disappears",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 22,
+        "text": "When the body moves without shame, it's a prayer; it's its own melody",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 23,
+        "text": "When I whirl, I'm not dancing; I'm falling into God",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 24,
+        "text": "Your modern bodies still know this secret; if you let them move without a script, they know freedom",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 25,
+        "text": "Freedom begins when the body remembers its own rhythm",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 26,
+        "text": "If what is believed is always reflected back, to believe that we ourselves are in some way flawed, inappropriate, unsavory-when we believe these things about ourselves and a desire is born, the feeling reflected back is that this must also be flawed",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 27,
+        "text": "It is both the perspective on the self and the perspective on the desire that compounds into an exponential perception and feeling of embarrassment and shame",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 28,
+        "text": "The soul and the body are conspirators in truth",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 29,
+        "text": "A romantic relationship is lived with freedom where desire is not chained by fear",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 30,
+        "text": "Speaking the truth-it's not always being comfortable or easy, but choose honesty over security",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 31,
+        "text": "Allow the other to grow in unpredictable directions; if one wishes to paint, travel, or explore another or something else, the other does not clutch but asks, how can I walk beside your becoming?",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 32,
+        "text": "Freedom in this relationship means permission to change, to desire, even to risk longing for others without threat of punishment",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 33,
+        "text": "It does not mean chaos; it means choosing that relationship each day, not because of contract, but because the soul still whispers yes",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 34,
+        "text": "It is dangerous only because it asks you to be alive in every moment instead of embalmed in certainty",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 35,
+        "text": "Look at the sky and the earth; they're married since the beginning of time",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 36,
+        "text": "The sky gives rain, the earth gives flowers",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 37,
+        "text": "They do not bind each other, yet they cannot be apart",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 38,
+        "text": "A free relationship is like a dance of giving and receiving without chains",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 39,
+        "text": "Each one is the guest and the host, the student and the teacher",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 40,
+        "text": "In freedom, one rejoices when the other is radiant, even if the light comes from another sun",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 41,
+        "text": "They trust that what is true will not leave, and what leaves was never meant to stay",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 42,
+        "text": "The excitement does not fade because each day each one appears in a new face",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 43,
+        "text": "To live this way is to love not the form, but the essence",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 44,
+        "text": "Marriage is a bowl-a vessel where you pour joy, your fears, your hunger",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 45,
+        "text": "The bowl isn't the issue; it's how you use it",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 46,
+        "text": "Many turn it to a prison, forgetting that the door was never locked",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 47,
+        "text": "Others abandoned the bowl when the wine is gone, not realizing that they themselves were supposed to refill it",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 48,
+        "text": "Passion is movement; it is difficult to maintain in this relationship because marriage desires stillness",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 49,
+        "text": "What if you let passion be the wind that shakes the bowl?",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 50,
+        "text": "Instead of fearing the ebb and flow, celebrate it",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 51,
+        "text": "If you only see your partner in the same way, to look at the same face every day, you forget the infinite within them",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 52,
+        "text": "See them new each day and you will be surprised every morning with their kiss",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 53,
+        "text": "There are inherent roles in our DNA, just as many other things; even the fear of rejection meant death",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 54,
+        "text": "Modern relationships are not ignoring these roles; you are shifting them, blending them, allowing freedom within them, allowing individual uniqueness and expression",
+        "being": "Rumi",
+        "kind": "direct_quote",
+        "attribution": "Rumi — in their words"
+      },
+      {
+        "n": 55,
+        "text": "Life shrinks or expands according to your courage",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 56,
+        "text": "Friendship is intimacy without the cloak of possession",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 57,
+        "text": "It allows the heart to open without the weight of expectation",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 58,
+        "text": "In her life, her friendships were many times as transformative as her loves",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 59,
+        "text": "The mirror to see her soul without the adornments of seduction",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 60,
+        "text": "If I were writing about you, I would not describe faces or names; I would describe the hunger in your eyes",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 61,
+        "text": "The way they shine with questions too daring for ordinary conversation",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 62,
+        "text": "I would write that you are a band of seekers who wish to love as if it were both a revolution and a prayer",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 63,
+        "text": "I would write that today in this circle, joy is dressed in a gown of mystery",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 64,
+        "text": "Intimacy is the courage to be seen in your own contradictions",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 65,
+        "text": "Not just the bearing of the skin, the outside, but the unveiling of the soul's shifting landscapes",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 66,
+        "text": "It is to allow another to witness your chaos and your poetry, your fears and your fire without disguise",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 67,
+        "text": "It is not the endless revealing of facts, but the endless revealing of feelings",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 68,
+        "text": "One can tell the truth and still be a stranger",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 69,
+        "text": "One can tell a dream, a secret longing, and become a lover",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 70,
+        "text": "Intimacy is the diary written in the presence of another; it is the art of letting yourself be read",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 71,
+        "text": "The greatest obstacle is the fear of exposure-to be truly seen in our contradictions, hunger, and shadows",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 72,
+        "text": "We fear we will not be loved and will be abandoned",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 73,
+        "text": "So we disguise ourselves with roles, lies, performances, and identity",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 74,
+        "text": "Intimacy does not die from a lack of time or even a lack of sex, if that's a part of it",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 75,
+        "text": "It dies from masks",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 76,
+        "text": "The moment we hide, the moment we censor our true self to remain acceptable",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 77,
+        "text": "The obstacle isn't a lack of love; it's the terror of being found unworthy once you are revealed",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 78,
+        "text": "That ache is because love stretches you; it's the body's protest against expansion",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 79,
+        "text": "Like the tightness of new wings pressing against skin",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 80,
+        "text": "To love is to become larger than the container of the old self",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 81,
+        "text": "The ache is not a wound; it is a seam where you are being remade",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 82,
+        "text": "The divine has carved a flute from your chest so longing can become a melody",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 83,
+        "text": "Do not fear it; the ache is proof you are alive, proof you are becoming a channel for something greater than yourself",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 84,
+        "text": "Celebrate it; it means your heart is in motion, stretching toward the infinite",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 86,
+        "text": "Desire is an honest part of you; it is, in a sense, the most honest part",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 87,
+        "text": "When you take desire out of hiding, you speak it, paint it, dance it-even if no one else sees it, it becomes sacred",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 88,
+        "text": "It becomes holy, and shame and secrecy die in that light of expression",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 89,
+        "text": "Authenticity is not about confession; it is about expression",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 90,
+        "text": "Shame is contagious; it's been stitched into mass consciousness for centuries, especially around topics of money, truth, desire, and sex",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 91,
+        "text": "It's woven from fear of rejection and the need for control",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 92,
+        "text": "Children inherit it before they even know their words, simply by sensing what is not spoken",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 93,
+        "text": "In mass consciousness, it functions as a silencer; it makes intimacy dangerous, creativity suspect, and honesty scandalous",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 94,
+        "text": "Every time one of you dares to speak openly, to live transparently, a thread of that is pulled loose",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 95,
+        "text": "The more you do this, the more free and bare the collective becomes",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 96,
+        "text": "Freedom doesn't mean the absence of bonds in any sort of relationships or friendships; it doesn't mean the absence of bonds",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 97,
+        "text": "It means the bonds we choose must be elastic enough to allow us to breathe",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 98,
+        "text": "Love can be multiple, layered, contradictory",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 99,
+        "text": "It doesn't need to be confined to a single definition",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 100,
+        "text": "When we love each other freely, we give each other not a prison, but a key",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 101,
+        "text": "Part of freedom is the courage to reveal our secret longings",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 102,
+        "text": "Spiritual authenticity is the courage to reveal our secret selves",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 103,
+        "text": "They're twins; one reveals the physical body and one reveals the soul",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 104,
+        "text": "Both are dangerous, but both are liberating",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 105,
+        "text": "One cannot exist fully without the other",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 106,
+        "text": "Marriage or commitment in this type of relationship is a paradox",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 107,
+        "text": "It promises stability to a force that thrives on change",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 108,
+        "text": "Passion is a flame; it needs air, mystery, risk",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 109,
+        "text": "Marriage often builds walls to protect the flame, and in doing that, it smothers it",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 110,
+        "text": "The difficulty is not in the love itself, but in the expectations we strap into permanence, exclusivity, and predictability",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 111,
+        "text": "In marriages, excitement fades not because desire dies, but because each one stops feeding it with imagination",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 112,
+        "text": "We forget to seduce; we believe possession replaces pursuit",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 113,
+        "text": "Safety replaces danger",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 114,
+        "text": "Desire craves novelty, secrecy, risk; it craves to be surprised",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 115,
+        "text": "If you wish for passion to remain inside commitment, then treat your partner as an ever-changing character, not a finished story",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 116,
+        "text": "Court them again and again",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 117,
+        "text": "Keep mystery alive even inside routine",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 118,
+        "text": "Love thrives on repetition, but desire thrives on reinvention",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 119,
+        "text": "Intimacy thrives in transparency but delights in mystery",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 120,
+        "text": "The art is knowing which secrets are petals and which are walls",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 121,
+        "text": "Share the truths that set you free and guard only the mysteries that make you shimmer",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 122,
+        "text": "In this way, intimacy and secrecy can dance without betraying each other",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 123,
+        "text": "We were asking, and this is where we are being asked to lead",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 124,
+        "text": "To shine, to share",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 125,
+        "text": "If I could choose a symbol for your group, it would be a ripe pomegranate",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 126,
+        "text": "Outside, a simple skin; inside, countless seeds shining with sweetness",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 127,
+        "text": "You are this one circle, many jewels",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 128,
+        "text": "Within each of you is a seed of passion, authenticity, of divine sweetness",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      },
+      {
+        "n": 129,
+        "text": "Break yourselves open together and the juice will stain your hands with joy",
+        "being": "Anaïs Nin",
+        "kind": "direct_quote",
+        "attribution": "Anaïs Nin — in their words"
+      }
     ]
   },
   {
@@ -854,6 +1836,288 @@ const SESSIONS = [
         "title": "Suffering Became My Paint",
         "quote": "When suffering became my paint, paint became my freedom",
         "attribution": "Frida Kahlo — in their words"
+      }
+    ],
+    "wisdom_items": [
+      {
+        "n": 1,
+        "text": "To hold on, you must let go",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 2,
+        "text": "The menu is not the meal",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 3,
+        "text": "The moment you try to grasp it, it slips away. And the moment you let it go, you live it effortlessly",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 4,
+        "text": "Begin not with serious thinking, but with a smile. The smile that comes when you realize that you are the joke, the puzzle and the answer all at once",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 5,
+        "text": "God is both everything and nothing, within you and beyond you",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 6,
+        "text": "The paradox is not for understanding. It's for living",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 7,
+        "text": "First to laugh at it. Resistance is coming from our minds' demand to have certainty, to understand, to know",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 8,
+        "text": "If you can smile when you encounter the absurd-I am both free and bound, both alive and dying-then you are living in a paradox instead of fighting it",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 9,
+        "text": "Because the paradox cracks the shell of the logical mind. It forces us beyond our categorizing and labeling",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 10,
+        "text": "Directly trying to define yourself is like trying to bite your own teeth",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 11,
+        "text": "The paradox is that they are different and not different at all",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 12,
+        "text": "In a dream, you walk in a world that feels real until you wake up. And in our life, we walk in a world that feels real until we die",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 13,
+        "text": "Both are expressions of consciousness. Both are reality wearing a different face",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 14,
+        "text": "They're not two rooms. They're one big house. One lit by the sun, one lit by the moon",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 15,
+        "text": "Treat your dreams not as a fantasy, but just another doorway to the same mystery",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 16,
+        "text": "The paradox of meditation is that it takes you inward and connects you outward",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 17,
+        "text": "In silence, you meet the whole universe",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 18,
+        "text": "Meditation is the art of doing nothing to discover everything",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 19,
+        "text": "It's surrender that becomes the greatest power. It is the silence that brings the loudest truth",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 20,
+        "text": "Everything is a paradox. If everything is a paradox, then paradox ceases to be a paradox and becomes just nature",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 21,
+        "text": "Paradox is the basis of creation. It's the positive and negative",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 22,
+        "text": "The moment you try to be serious about having fun, the fun disappears",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 23,
+        "text": "Fun happens when you stop trying, when you slip into the moment",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 24,
+        "text": "The paradox only guides you by loosening your grip",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 25,
+        "text": "Instead of one side of the contradiction, you practice going in between",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 26,
+        "text": "Too much freedom is chaos. Too much structure is a prison, but together, it's like art",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 27,
+        "text": "The paradox is your compass pointing, but not to certainty. Pointing you to balance",
+        "being": "Alan Watts",
+        "kind": "direct_quote",
+        "attribution": "Alan Watts — in their words"
+      },
+      {
+        "n": 28,
+        "text": "When suffering became my paint, paint became my freedom",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 29,
+        "text": "Your wounds are nothing to fear. They are the roots of your beauty",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 30,
+        "text": "Your scars, visible and invisible. They are your colors",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 31,
+        "text": "It's making art from it. Don't turn away from one side, the wound or the beauty. Put them both on a canvas and then you are expressing",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 32,
+        "text": "It is not meant to be solved. It's meant to be expressed",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 33,
+        "text": "Because paradox refuses to let you stay small. The tension stretches you open and allows you to touch or create from places that you would never have touched otherwise",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 34,
+        "text": "We both came to teach paradox by living it. We weren't meant to erase them. We were meant to magnify them, to let them be seen",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 35,
+        "text": "So that others could find themselves in the mirror of that. Both of our pre-birth intentions are very much to remind humanity that the wound and the wonder were not two separate things. They were one thing",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 36,
+        "text": "Her eyebrows were not decoration. They were shields. Antennas. Between eyes, between worlds",
+        "being": "Frida Kahlo",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Frida Kahlo"
+      },
+      {
+        "n": 37,
+        "text": "You have no eyebrows. Good. Then you have nothing to hide behind. Your face is pure truth. No filter, no disguise. I had too many. You have none. Balance. Together. One. Together, one paradox",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 38,
+        "text": "Fun is both fragile and fierce at the same time",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 39,
+        "text": "Even in that she did return. And the paradox is that she did not specifically as Frida in a body, again as Frida, but in stories inside every woman or person who doesn't hide their scars in colors",
+        "being": "Frida Kahlo",
+        "kind": "direct_quote",
+        "attribution": "Frida Kahlo — in their words"
+      },
+      {
+        "n": 40,
+        "text": "She continues to live. Even as everyone remembers her. At any time that we remember her, she continues to live",
+        "being": "Frida Kahlo",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Frida Kahlo"
       }
     ]
   },
@@ -921,6 +2185,148 @@ const SESSIONS = [
         "quote": "Everyone thinks about changing the world, but few think about changing themselves.",
         "attribution": "Leo Tolstoy — in their words"
       }
+    ],
+    "wisdom_items": [
+      {
+        "n": 1,
+        "text": "Most men can stand conflict and adversity, but if you want to test someone's character, give them power.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 2,
+        "text": "I once had the peculiar responsibility of holding together a country that seemed determined to tear itself apart.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 3,
+        "text": "I spent a good deal of time reflecting on power. What does it do to people? What do people do with it? And it's a subject that doesn't grow simpler with distance.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 4,
+        "text": "My companion tonight also spent his life grappling with the same matter, the same idea, but with a much sharper pen than I possessed.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 5,
+        "text": "You see, Mr. Tolstoy believed that government itself is a kind of violence. I, on the other hand, found myself in a position where avoiding power entirely allowed injustice, slavery to continue unchallenged.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 6,
+        "text": "I suppose that is a fair description of the presidency as well.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 7,
+        "text": "We are a group of people who think deeply about freedom, and this is very clear in our atmosphere, our field.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 8,
+        "text": "Freedom isn't merely the absence of chains. The more difficult question is: What does a free person do with their power once we wake up to our own agency?",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 9,
+        "text": "I learned that people will endure a lot of hardship rather than be separated from their community.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 10,
+        "text": "Humans often believe we have to understand the entire path before we take the next step.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 11,
+        "text": "Growth happens one honest step at a time.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 12,
+        "text": "Awareness works like the lantern. When you start to question your beliefs, take a look at your emotions, take responsibility for your reactions, then every time you do that the lantern lights a little bit further.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 13,
+        "text": "No civilization has ever evolved all at once. It happens because individuals, people decide to take the next few steps honestly, the next 10 feet, really honestly.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 14,
+        "text": "From what we can see, many of you have already begun that walk.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 15,
+        "text": "That is how every meaningful journey begins, and we are very pleased to have walked a few of those feet with you today.",
+        "being": "Abraham Lincoln",
+        "kind": "direct_quote",
+        "attribution": "Abraham Lincoln — in their words"
+      },
+      {
+        "n": 16,
+        "text": "Everyone thinks about changing the world, but few think about changing themselves.",
+        "being": "Leo Tolstoy",
+        "kind": "direct_quote",
+        "attribution": "Leo Tolstoy — in their words"
+      },
+      {
+        "n": 17,
+        "text": "Yes, but not always wiser.",
+        "being": "Leo Tolstoy",
+        "kind": "direct_quote",
+        "attribution": "Leo Tolstoy — in their words"
+      },
+      {
+        "n": 18,
+        "text": "In my country, a man was admired not only as a politician, a statesman, but as a very rare example of moral courage within power or inside power.",
+        "being": "Leo Tolstoy",
+        "kind": "direct_quote",
+        "attribution": "Leo Tolstoy — in their words"
+      },
+      {
+        "n": 19,
+        "text": "I spent much of my life trying to understand why humans continue to organize their societies, their communities, around violence, domination and hierarchy, even when they know deep inside themselves that love and conscience are a much better guide.",
+        "being": "Leo Tolstoy",
+        "kind": "direct_quote",
+        "attribution": "Leo Tolstoy — in their words"
+      },
+      {
+        "n": 20,
+        "text": "Yes, and that is precisely the problem or question that haunted me. If power is always corrupting and yet injustice sometimes requires resistance, then human conscience stands in a very uncomfortable position.",
+        "being": "Leo Tolstoy",
+        "kind": "direct_quote",
+        "attribution": "Leo Tolstoy — in their words"
+      }
     ]
   },
   {
@@ -985,6 +2391,477 @@ const SESSIONS = [
         "icon_key": "wave",
         "title": "The Detour Is the Story",
         "quote": "Sometimes the unimaginable isn't just the dream. It's the detour. And the detour ends up being the story.",
+        "attribution": "Princess Diana — in their words"
+      }
+    ],
+    "wisdom_items": [
+      {
+        "n": 1,
+        "text": "We did not expect our lives to unfold the way they did, but perhaps none of you will either.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 2,
+        "text": "You're all here having a conversation with a comedian after he's dead about living an unimaginable life. If that's not unimaginable, I don't know what is.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 3,
+        "text": "Comedians live for a good audience. And this is the first time I've had one that spans dimensions. That's new. I like it.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 4,
+        "text": "When you're imagining your future, you're imagining it from your current self, but your life is trying to take you far beyond that current self.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 5,
+        "text": "So it has to be unimaginable because you're becoming someone you haven't met yet.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 6,
+        "text": "Most of you think you know what you want. Security, money, stability, recognition, even spiritual success. But what you truly want is freedom and expression, authentic connection, meaning and joy.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 7,
+        "text": "The unimaginable isn't random. It's beyond the boundaries of your current identity.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 8,
+        "text": "If I had told most of you 10 years ago that you'd be doing what you're doing right now, you would say no. Or at least, well, that's ambitious.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 9,
+        "text": "The unimaginable isn't something that you have to create. It's just something that you allow to unfold when you let go of who you thought you needed to be.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 10,
+        "text": "And it usually starts with one small, slightly unreasonable step.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 11,
+        "text": "My brain works like 15 squirrels on espresso trying to write Shakespeare. One of them's wearing tights.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 12,
+        "text": "Some people have one thought at a time. I had thoughts like a popcorn machine.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 13,
+        "text": "When you're sensitive, it's like emotional wi-fi. You feel the room, send out a joke and suddenly everybody connects.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 14,
+        "text": "He was naturally sort of quick minded. Some people just process information quickly, which is great for comedy.",
+        "being": "Robin Williams",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Robin Williams"
+      },
+      {
+        "n": 15,
+        "text": "When you feel a lot, your mind learns to move quickly.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 16,
+        "text": "You all know this as you've been practicing just sitting with discomfort and understanding how quickly you distract yourself without realizing that you've even been uncomfortable.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 17,
+        "text": "Sensitivity and curiosity with adaptation-that's what it is.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 18,
+        "text": "Being funny is a way to create space. Not necessarily avoid the moment, but to make it more breathable.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 19,
+        "text": "A joke doesn't necessarily always take you away from the feeling. It helps you stay in it without being overwhelmed.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 20,
+        "text": "Humor is also connection. In intense moments, a lot of people will withdraw and they get quiet, guarded. A little bit of humor will bring people back together.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 21,
+        "text": "It's like opening a window in a room that's gotten too warm and stuffy.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 22,
+        "text": "Most of us are sensitive, we do this naturally.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 23,
+        "text": "As grueling as performing a standup show in front of a live audience, it was just necessary for him. That was the connection.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 24,
+        "text": "You don't feel that in a movie, a TV show, or an interview. You don't get that response.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 25,
+        "text": "What makes something funny is surprise. Set up expectation, then left turn right.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 26,
+        "text": "You always think I'm going one way, and then suddenly I'm talking about a penguin running in a yoga class. And because your brain goes, wait, that doesn't belong there.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 27,
+        "text": "That little moment of confusion is what turns into laughter.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 28,
+        "text": "The other thing that's funny is the truth, but seen from a different angle.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 29,
+        "text": "It comes from surprise, from truth, from contrast, timing and humanity.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 30,
+        "text": "Don't wait until life makes sense to enjoy it, because, spoiler alert, it rarely does.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 31,
+        "text": "The beautiful thing about improvisation is you can't actually make a mistake, but if you perceive you do, just remember, they eventually become material-your mistakes.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 32,
+        "text": "He felt appreciation and warmth from audiences and connection only when he was performing, really. And that was very real to him, that connection when he was on a stage but alone, he almost never carried that feeling.",
+        "being": "Robin Williams",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Robin Williams"
+      },
+      {
+        "n": 33,
+        "text": "Once it was over, it was over and gone. The connection was just absent. And that was a great drop.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 34,
+        "text": "You can be loved by millions of people and still be unable to love yourself.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 35,
+        "text": "When people love what you do, it is not the same as them loving you.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 36,
+        "text": "I felt appreciation. I felt warmth from audiences and connection only when I was performing, really.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 37,
+        "text": "Quickness was how I got faster and faster to manage the intensity of how I felt.",
+        "being": "Robin Williams",
+        "kind": "direct_quote",
+        "attribution": "Robin Williams — in their words"
+      },
+      {
+        "n": 39,
+        "text": "She feels a lot of warmth from all of us. There's something sincere about the group willingness to explore life beyond expectations. And that's a big, beautiful thing.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 40,
+        "text": "Sometimes the unimaginable isn't just the dream. It's the detour. And the detour ends up being the story.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 41,
+        "text": "She imagined in life was like a life of belonging, of love and belonging. And she actually thought she would find that in traditional life, you know, marriage and family.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 42,
+        "text": "But what she really wanted was just connection. And she discovered that in ways she could never have imagined.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 43,
+        "text": "The life I imagine was so much smaller than the life that unfolded.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 44,
+        "text": "And that is true for most of you. You're being invited into lives that your current self can't comprehend. And it's not because you're incapable. It's because you're expanding.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 45,
+        "text": "An unimaginable life is not one that's chaotic. It's one that's larger than your current expectations of yourself.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 46,
+        "text": "She experienced a lot of warmth from people. When she met individuals face to face and held hands with them or spoke with them, she actually felt genuine connection with them.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 47,
+        "text": "And those moments were very meaningful to her. They meant a lot. But most of the time she felt quite alone because public love is very distant.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 48,
+        "text": "It's beautiful, but it is in no way, shape or form the same as close personal connection and understanding.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 49,
+        "text": "She had so much self doubt. Never felt like she was doing enough or ever felt like she truly belonged.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 50,
+        "text": "The interest in her, the constant interest in her-it wasn't love. It was more obsession and fantasy. Right. Fandom.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 51,
+        "text": "She didn't feel the extent of it at all, like in her life.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 52,
+        "text": "Love from the outside never feels the same as love on the inside.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 53,
+        "text": "She was sensitive but not that smart (in the academic sense).",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 54,
+        "text": "Sensitivity was a very central part of her experience. She was also quite empathic too. So she felt things very deeply.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 55,
+        "text": "She felt emotions of other people just entering a room.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 56,
+        "text": "The public life, the scrutiny, expectations, those things were very, very overwhelming for her.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 57,
+        "text": "She didn't understand her sensitivity at all when she was alive. But in fact she thought it was weakness or vulnerability in life.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 58,
+        "text": "Now, from her perspective now it allowed her, her compassion to really naturally flow. And that was a big part of her life.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 59,
+        "text": "Her vibration didn't force her life to unfold, but it did resonate and attract certain experiences.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 60,
+        "text": "Because of her sensitivity, she was more affected by pressure and expectations, loneliness.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 61,
+        "text": "It's all a perfect setup. Before coming into the life, there was an agreement on her sensitivity and her environment.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 62,
+        "text": "Her sensitive nature was really meaningful and actually public experiences. But that was all to lead to compassion, which was her one of her big pre-birth intentions.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 63,
+        "text": "She was drawn to intuition, magic, healing and healing work. She did trust her instincts and she was very curious about the deeper aspects.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 64,
+        "text": "She felt that compassion for one individual, two individuals and then the masses was an expression of spirituality.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 65,
+        "text": "She feels a lot of warmth from all of you. There's something sincere about the group willingness to explore life beyond expectations.",
+        "being": "Princess Diana",
+        "kind": "faithful_paraphrase",
+        "attribution": "Paraphrased from Princess Diana"
+      },
+      {
+        "n": 66,
+        "text": "Be gentle with yourselves as you step into the unimaginable. Learning to trust what you can't see takes a lot of courage.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 67,
+        "text": "You often don't feel confident, ready, certain. But the fact that you're willing to continue to care and to grow is what's meaningful and what makes you who you are.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
+        "attribution": "Princess Diana — in their words"
+      },
+      {
+        "n": 68,
+        "text": "Your kindness matters more than you realize. The way you listen to each other, support each other, and open your hearts-those things ripple out in ways you can't see.",
+        "being": "Princess Diana",
+        "kind": "direct_quote",
         "attribution": "Princess Diana — in their words"
       }
     ]
@@ -1133,29 +3010,108 @@ function renderSession(){
         stroke="currentColor" stroke-width="1.6"><path d="m9 6 6 6-6 6"/></svg></span>
     </button>`).join("");
 
-  $$("[data-wc]").forEach(b=>b.addEventListener("click",()=>openWisdom(+b.dataset.wc)));
+  $$("[data-wc]").forEach(b=>b.addEventListener("click",()=>openDeck("code", +b.dataset.wc)));
+
+  const all = session.wisdom_items ? session.wisdom_items.length : 0;
+  $("#s-readall").innerHTML = all
+    ? `<button class="read-all" id="read-all-btn">Read all ${all} passages from this session</button>`
+    : "";
+  if(all) $("#read-all-btn").addEventListener("click",()=>{ renderReading(); show("reading"); });
 }
 
 let wcIndex = 0;
+let deck = [];        // whatever is currently being paged through
+let deckKind = "code";
+
+/* A wisdom code and a passage from the full reading are the same shape
+   on screen, so one view renders both. */
+function normalise(x, kind){
+  return kind === "code"
+    ? { n:x.code_number, icon:x.icon_key, title:x.title,
+        quote:x.quote, attribution:x.attribution }
+    : { n:x.n, icon:null, title:null,
+        quote:x.text, attribution:x.attribution };
+}
+
+function openDeck(kind, i){
+  deckKind = kind;
+  deck = (kind === "code" ? session.wisdom_codes : session.wisdom_items)
+           .map(x => normalise(x, kind));
+  openWisdom(i);
+}
+
 function openWisdom(i){
-  wcIndex = i;
-  const w = session.wisdom_codes[i];
-  $("#wc-icon").innerHTML   = svg(w.icon_key,26);
-  $("#wc-kicker").textContent = `Wisdom Code ${String(w.code_number).padStart(2,"0")}`;
-  $("#wc-title").textContent  = w.title;
+  if(!deck.length) openDeck("code", i);
+  wcIndex = Math.max(0, Math.min(i, deck.length - 1));
+  const w = deck[wcIndex];
+
+  $("#wc-icon").innerHTML = w.icon ? svg(w.icon,26) : svg("star",26);
+  $("#wc-kicker").textContent = deckKind === "code"
+    ? `Wisdom Code ${String(w.n).padStart(2,"0")}`
+    : `Passage ${w.n} of ${deck.length}`;
+  $("#wc-title").textContent = w.title || "";
+  $("#wc-title").style.display = w.title ? "" : "none";
   $("#wc-quote").innerHTML =
     `<span class="mark open">“</span>${w.quote}<span class="mark close">”</span>`;
   $("#wc-attrib").textContent = w.attribution;
 
-  $("#wc-pager").innerHTML = session.wisdom_codes
-    .map((_,n)=>`<button class="${n===i?'on':''}" data-page="${n}"
-      aria-label="Wisdom code ${n+1}"></button>`).join("");
-  $$("[data-page]").forEach(b=>b.addEventListener("click",()=>openWisdom(+b.dataset.page)));
-
+  renderPager();
+  $("#wc-link").classList.remove("show");
   $$(".wc-actions .iconbtn").forEach(b=>b.classList.remove("on"));
   const card = $("#wc-card");
   card.style.animation = "none"; void card.offsetWidth; card.style.animation = "";
   show("wisdom");
+}
+
+/* Dots are fine for five. For a hundred and twenty-eight they are not,
+   so a long deck gets a counter and arrows instead. */
+function renderPager(){
+  const p = $("#wc-pager");
+  if(deck.length <= 12){
+    p.className = "wc-pager";
+    p.innerHTML = deck.map((_,n)=>
+      `<button class="${n===wcIndex?'on':''}" data-page="${n}"
+        aria-label="Item ${n+1}"></button>`).join("");
+    $$("[data-page]").forEach(b=>b.addEventListener("click",()=>openWisdom(+b.dataset.page)));
+  } else {
+    p.className = "";
+    p.innerHTML = `
+      <div class="wc-count">${wcIndex+1} of ${deck.length}</div>
+      <div class="wc-arrows">
+        <button data-step="-1" ${wcIndex===0?"disabled":""} aria-label="Previous passage">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.6"><path d="m15 6-6 6 6 6"/></svg></button>
+        <button data-step="1" ${wcIndex===deck.length-1?"disabled":""} aria-label="Next passage">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.6"><path d="m9 6 6 6-6 6"/></svg></button>
+      </div>`;
+    $$("[data-step]").forEach(b=>b.addEventListener("click",()=>
+      openWisdom(wcIndex + (+b.dataset.step))));
+  }
+}
+
+/* ---------- the full reading ---------- */
+function renderReading(){
+  $("#reading-title").textContent = tileLabel(session.title);
+  $("#reading-sub").textContent =
+    `Every passage from session ${pad(session.session_number)} — ${session.wisdom_items.length} in all`;
+
+  let html = "", voice = null;
+  session.wisdom_items.forEach((w,i)=>{
+    if(w.being !== voice){
+      voice = w.being;
+      html += `<div class="voice-head"><span class="line"></span>
+                 <span>${voice || "Session"}</span><span class="line"></span></div>`;
+    }
+    const para = w.kind === "faithful_paraphrase";
+    html += `<button class="passage${para?" is-paraphrase":""}" data-passage="${i}">
+        <p class="q">${w.text}</p>
+        <p class="a"><span class="n">${w.n}</span>${w.attribution}</p>
+      </button>`;
+  });
+  $("#reading-list").innerHTML = html;
+  $$("[data-passage]").forEach(b=>b.addEventListener("click",()=>
+    openDeck("item", +b.dataset.passage)));
 }
 
 /* ---------- navigation ---------- */
@@ -1193,9 +3149,57 @@ $$("[data-toggle]").forEach(b=>b.addEventListener("click",()=>{
   toast(on ? kind : (kind==="Loved" ? "Love removed" : "Removed from saved"));
 }));
 
-$("#wc-share").addEventListener("click",()=>{
-  const w = session.wisdom_codes[wcIndex];
-  toast(`Shared with attribution — ${w.attribution}`);
+/* A share link carries the session and the item, so whoever opens it
+   lands on the same passage with the same attribution under it. */
+function shareLink(){
+  const u = new URL(location.href);
+  u.hash = "";
+  u.search = `?s=${session.session_number}&${deckKind === "code" ? "c" : "q"}=${deck[wcIndex].n}`;
+  return u.toString();
+}
+
+/* Older browsers and locked-down contexts refuse the async clipboard,
+   so fall back through the options rather than failing outright. */
+function copyText(t){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(t);
+  }
+  return new Promise((res,rej)=>{
+    const ta = document.createElement("textarea");
+    ta.value = t;
+    ta.setAttribute("readonly","");
+    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, t.length);
+    const ok = document.execCommand && document.execCommand("copy");
+    document.body.removeChild(ta);
+    ok ? res() : rej(new Error("copy refused"));
+  });
+}
+
+$("#wc-share").addEventListener("click", async ()=>{
+  const w = deck[wcIndex], url = shareLink();
+  const text = `“${w.quote}” — ${w.attribution}`;
+  if(navigator.share){
+    try{ await navigator.share({title:"Dead Talks", text, url}); return; }
+    catch(e){ if(e && e.name === "AbortError") return; }   // they cancelled
+  }
+  try{
+    await copyText(`${text}\n${url}`);
+    toast("Link copied, with its attribution");
+  }catch(e){
+    try{
+      await copyText(url);
+      toast("Link copied");
+    }catch(e2){
+      // last resort: show the link to copy by hand. Never overwrite the
+      // attribution line — that has to stay under the quote.
+      const el = $("#wc-link");
+      el.textContent = url;
+      el.classList.add("show");
+      toast("Copy the link below");
+    }
+  }
 });
 $("#wc-reflect").addEventListener("click",()=>toast("Reflections are private to you"));
 
@@ -1224,12 +3228,37 @@ $$(".tab").forEach(t=>t.addEventListener("click",()=>{
   else toast(`${t.textContent.trim()} — not in this preview`);
 }));
 
+/* ---------- open a shared link, if this is one ---------- */
+function openFromLink(){
+  const p = new URLSearchParams(location.search);
+  const sn = parseInt(p.get("s"), 10);
+  if(!sn) return false;
+  const found = SESSIONS.find(x=>x.session_number === sn);
+  if(!found) return false;
+  session = found;
+  paintArt(); renderHome(); renderCard(); renderSession();
+
+  const c = parseInt(p.get("c"), 10), q = parseInt(p.get("q"), 10);
+  if(c){
+    const i = session.wisdom_codes.findIndex(w=>w.code_number === c);
+    if(i >= 0){ openDeck("code", i); return true; }
+  }
+  if(q){
+    const i = session.wisdom_items.findIndex(w=>w.n === q);
+    if(i >= 0){ openDeck("item", i); return true; }
+  }
+  flipCard(true);
+  show("card");
+  return true;
+}
+
 /* ---------- go ---------- */
 seedStars();
 paintArt();
 renderHome();
 renderCard();
 renderSession();
+openFromLink();
 </script>
 </body>
 </html>
