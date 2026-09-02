@@ -356,6 +356,11 @@ body{
   width:100%;margin-top:9px;padding:10px;background:none;border:0;
   color:rgba(239,223,192,.5);font-family:var(--body);font-size:12px;cursor:pointer;
 }
+.sheet .ghost.linky{
+  margin-top:2px;padding:7px;color:var(--gold);opacity:.85;
+  font-size:12px;letter-spacing:.01em;
+}
+.sheet .ghost.linky:hover{opacity:1;text-decoration:underline}
 .sheet .fineprint{
   margin:14px 0 0;font-size:10.5px;line-height:1.5;
   color:rgba(239,223,192,.4);
@@ -911,11 +916,15 @@ body{
       <form id="auth-form">
         <input type="email" id="auth-email" placeholder="you@example.com"
                autocomplete="email" required>
-        <button class="primary" type="submit" id="auth-send">Email me a link</button>
+        <input type="password" id="auth-password" placeholder="Password"
+               autocomplete="current-password" minlength="6">
+        <button class="primary" type="submit" id="auth-send">Sign in</button>
       </form>
+      <button class="ghost linky" id="auth-toggle">New here? Create an account</button>
+      <button class="ghost linky" id="auth-magic">Email me a link instead</button>
       <button class="ghost" id="auth-close">Not now</button>
-      <p class="fineprint">We email you a link to sign in — there is no password.
-         We store your email address and the codes you keep. Nothing else.</p>
+      <p class="fineprint" id="auth-fine">We store your email address and the codes
+         you keep. Nothing else.</p>
     </div>
   </div>
 
@@ -3703,6 +3712,9 @@ function authReady(){
 
 function openAuth(){
   $("#profile-sheet").classList.remove("show");   // only one sheet at a time
+  $("#auth-toggle").style.display = "";
+  $("#auth-password").value = "";
+  setAuthMode("signin");
   $("#auth-sheet").classList.add("show");
 }
 function closeAuth(){ $("#auth-sheet").classList.remove("show"); }
@@ -3712,24 +3724,112 @@ $("#auth-sheet").addEventListener("click", e=>{
   if(e.target.id === "auth-sheet"){ pendingAction=null; closeAuth(); }
 });
 
+/* Three ways in: a password, a new account, or an emailed link.
+   Password is the default because it needs no trip to an inbox. */
+let authMode = "signin";
+
+function setAuthMode(m){
+  authMode = m;
+  const pw = $("#auth-password");
+  $("#auth-form").style.display = "";
+  $("#auth-close").textContent = "Not now";
+
+  if(m === "link"){
+    pw.style.display = "none"; pw.required = false;
+    $("#auth-title").textContent = "Sign in by email";
+    $("#auth-copy").textContent  = "We will email you a link. No password needed.";
+    $("#auth-send").textContent  = "Email me a link";
+    $("#auth-toggle").textContent = "Use a password instead";
+    $("#auth-magic").style.display = "none";
+  } else if(m === "signup"){
+    pw.style.display = ""; pw.required = true;
+    pw.setAttribute("autocomplete","new-password");
+    $("#auth-title").textContent = "Create an account";
+    $("#auth-copy").textContent  = "Pick a password of at least six characters.";
+    $("#auth-send").textContent  = "Create account";
+    $("#auth-toggle").textContent = "I already have an account";
+    $("#auth-magic").style.display = "";
+  } else {
+    pw.style.display = ""; pw.required = true;
+    pw.setAttribute("autocomplete","current-password");
+    $("#auth-title").textContent = "Keep what speaks to you";
+    $("#auth-copy").textContent  =
+      "Sign in and the codes you love or save stay with you, gathered by the session they came from.";
+    $("#auth-send").textContent  = "Sign in";
+    $("#auth-toggle").textContent = "New here? Create an account";
+    $("#auth-magic").style.display = "";
+  }
+}
+
+$("#auth-toggle").addEventListener("click", ()=>
+  setAuthMode(authMode === "signin" ? "signup" : "signin"));
+$("#auth-magic").addEventListener("click", ()=> setAuthMode("link"));
+
+/* Supabase messages are terse; say something a person can act on. */
+function authProblem(err){
+  const m = (err && err.message ? err.message : "").toLowerCase();
+  if(m.includes("invalid login"))      return "That email and password do not match.";
+  if(m.includes("already registered")) return "That email already has an account — try signing in.";
+  if(m.includes("at least"))           return "Passwords need at least six characters.";
+  if(m.includes("not confirmed"))      return "Confirm your email first — check your inbox.";
+  if(m.includes("rate"))               return "Too many attempts. Wait a minute and try again.";
+  return (err && err.message) || "Something went wrong. Try again.";
+}
+
+function authSent(title, copy){
+  $("#auth-title").textContent = title;
+  $("#auth-copy").textContent  = copy;
+  $("#auth-form").style.display = "none";
+  $("#auth-magic").style.display = "none";
+  $("#auth-toggle").style.display = "none";
+  $("#auth-close").textContent = "Close";
+}
+
 $("#auth-form").addEventListener("submit", async e=>{
   e.preventDefault();
   if(!authReady()){ toast("Sign-in is unavailable right now"); return; }
   const email = $("#auth-email").value.trim();
+  const pass  = $("#auth-password").value;
   if(!email) return;
-  $("#auth-send").disabled = true;
-  $("#auth-send").textContent = "Sending…";
-  const { error } = await db.auth.signInWithOtp({
-    email, options:{ emailRedirectTo: location.origin + location.pathname }
-  });
-  $("#auth-send").disabled = false;
-  $("#auth-send").textContent = "Email me a link";
-  if(error){ toast(error.message || "Could not send the link"); return; }
-  $("#auth-title").textContent = "Check your email";
-  $("#auth-copy").textContent =
-    "We sent a link to " + email + ". Open it on this device and you will be signed in.";
-  $("#auth-form").style.display = "none";
-  $("#auth-close").textContent = "Close";
+
+  const btn = $("#auth-send"), label = btn.textContent;
+  btn.disabled = true; btn.textContent = "One moment…";
+
+  try{
+    if(authMode === "link"){
+      const { error } = await db.auth.signInWithOtp({
+        email, options:{ emailRedirectTo: location.origin + location.pathname }
+      });
+      if(error) throw error;
+      authSent("Check your email",
+        "We sent a link to " + email + ". Open it on this device and you will be signed in.");
+      return;
+    }
+
+    if(authMode === "signup"){
+      const { data, error } = await db.auth.signUp({
+        email, password: pass,
+        options:{ emailRedirectTo: location.origin + location.pathname }
+      });
+      if(error) throw error;
+      // With "Confirm email" on, Supabase returns a user but no session.
+      if(data && data.session){ closeAuth(); toast("Welcome"); return; }
+      authSent("One more step",
+        "We sent a confirmation to " + email + ". Open it, then come back and sign in.");
+      return;
+    }
+
+    const { error } = await db.auth.signInWithPassword({ email, password: pass });
+    if(error) throw error;
+    closeAuth();
+    toast("Signed in");
+
+  }catch(err){
+    toast(authProblem(err));
+  }finally{
+    btn.disabled = false;
+    if(btn.textContent === "One moment…") btn.textContent = label;
+  }
 });
 
 /* what the user keeps */
