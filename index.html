@@ -976,6 +976,8 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
+    "podcast_url": null,
+    "spotify_url": null,
     "artwork_path": "covers/session-001.jpg",
     "artwork_alt": "Rumi and Anaïs Nin, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -2073,6 +2075,8 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
+    "podcast_url": null,
+    "spotify_url": null,
     "artwork_path": "covers/session-002.jpg",
     "artwork_alt": "Alan Watts and Frida Kahlo, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -2466,6 +2470,8 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
+    "podcast_url": null,
+    "spotify_url": null,
     "artwork_path": "covers/session-003.jpg",
     "artwork_alt": "Abraham Lincoln and Leo Tolstoy, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -2699,6 +2705,8 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
+    "podcast_url": null,
+    "spotify_url": null,
     "artwork_path": "covers/session-004.jpg",
     "artwork_alt": "Robin Williams and Princess Diana, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -3403,13 +3411,19 @@ function renderCard(){
   $("#card-eyebrow").title = "sessions.session_date";
 }
 
+/* The three experience buttons in use. Read Notes, View Artwork and
+   Community are hidden for now at Michael's request — they are kept
+   here rather than deleted so bringing one back is a one-word change.
+   Listen and Song are links out (podcast, Spotify); the Audio Journey
+   is the only file we host ourselves. */
 const XP = [
-  { key:"listen",    label:"Listen",        icon:"headphones", field:"listen_path",     src:"media_assets kind='listen'"  },
-  { key:"song",      label:"Song",          icon:"note",       field:"song_path",       src:"media_assets kind='song'"    },
+  { key:"listen",    label:"Listen",        icon:"headphones", field:"podcast_url",     src:"the session podcast", link:true },
+  { key:"song",      label:"Song",          icon:"note",       field:"spotify_url",     src:"the song on Spotify", link:true },
   { key:"journey",   label:"Audio Journey", icon:"journey",    field:"journey_path",    src:"media_assets kind='journey'" },
-  { key:"notes",     label:"Read Notes",    icon:"book",       field:"has_transcript",  src:"transcripts.raw_text"        },
-  { key:"artwork",   label:"View Artwork",  icon:"image",      field:"artwork_path",    src:"media_assets kind='artwork'" },
-  { key:"community", label:"Community",     icon:"people",     field:"publication_status", src:"reactions + private_reflections" }
+
+  { key:"notes",     label:"Read Notes",    icon:"book",       field:"has_transcript",  src:"transcripts.raw_text",           hidden:true },
+  { key:"artwork",   label:"View Artwork",  icon:"image",      field:"artwork_path",    src:"media_assets kind='artwork'",    hidden:true },
+  { key:"community", label:"Community",     icon:"people",     field:"publication_status", src:"reactions + private_reflections", hidden:true }
 ];
 
 function renderSession(){
@@ -3423,7 +3437,7 @@ function renderSession(){
     ? `Channelled by ${session.channelled_by}`
     : "Channelled by — not yet recorded";
 
-  $("#s-experience").innerHTML = XP.map(x=>{
+  $("#s-experience").innerHTML = XP.filter(x=>!x.hidden).map(x=>{
     const ready = !!session[x.field];
     return `<button class="xp" data-xp="${x.key}" ${ready?"":"disabled"}>
       ${svg(x.icon,21)}<span>${x.label}</span></button>`;
@@ -3431,7 +3445,10 @@ function renderSession(){
 
   $$("[data-xp]").forEach(b=>b.addEventListener("click",()=>{
     const x = XP.find(v=>v.key===b.dataset.xp);
-    toast(`${x.label} — ${x.src}`);
+    const v = session[x.field];
+    // Listen and Song are links out; open them rather than describing them.
+    if(x.link && v){ window.open(v, "_blank", "noopener,noreferrer"); return; }
+    toast(v ? `${x.label} — ${x.src}` : `${x.label} — not added yet`);
   }));
 
   $("#s-wisdom").innerHTML = session.wisdom_codes.map((w,i)=>`
