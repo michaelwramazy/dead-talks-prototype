@@ -316,6 +316,73 @@ body{
 }
 .wc-link.show{display:block}
 
+/* ---------- accounts ---------- */
+.sheet{
+  position:fixed;inset:0;z-index:60;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(4,8,20,.72);backdrop-filter:blur(3px);
+}
+.sheet.show{display:flex}
+.sheet-inner{
+  width:100%;max-width:420px;background:var(--navy-lift);
+  border:1px solid rgba(212,169,78,.34);border-top-left-radius:16px;
+  border-top-right-radius:16px;padding:24px 22px 30px;
+}
+.sheet h3{
+  font-family:var(--display);font-weight:500;font-size:21px;
+  color:var(--parchment);margin:0 0 6px;text-align:center;
+}
+.sheet p{
+  margin:0 0 18px;font-size:12.5px;font-weight:300;line-height:1.55;
+  color:rgba(239,223,192,.62);text-align:center;
+}
+.sheet input{
+  width:100%;padding:13px 14px;border-radius:7px;
+  background:rgba(8,14,34,.6);border:1px solid rgba(212,169,78,.3);
+  color:var(--parchment);font-family:var(--body);font-size:14px;
+  margin-bottom:11px;
+}
+.sheet input:focus{outline:none;border-color:var(--gold)}
+.primary,
+.sheet .primary{
+  width:100%;padding:13px;border-radius:7px;cursor:pointer;
+  background:linear-gradient(150deg,#1b2a55,#0B1229);
+  border:1px solid rgba(212,169,78,.5);color:var(--parchment);
+  font-family:var(--display);font-size:16px;
+}
+.primary:hover,
+.sheet .primary:hover{border-color:var(--gold-bright)}
+.sheet .ghost{
+  width:100%;margin-top:9px;padding:10px;background:none;border:0;
+  color:rgba(239,223,192,.5);font-family:var(--body);font-size:12px;cursor:pointer;
+}
+.sheet .fineprint{
+  margin:14px 0 0;font-size:10.5px;line-height:1.5;
+  color:rgba(239,223,192,.4);
+}
+
+/* saved / loved collection */
+.mine-head{text-align:center;margin:2px 0 16px}
+.mine-head h2{
+  font-family:var(--display);font-weight:500;font-size:22px;
+  color:var(--parchment);margin:0 0 5px;
+}
+.mine-head p{margin:0;font-size:12px;font-weight:300;color:rgba(239,223,192,.55)}
+.mine-tabs{display:flex;gap:8px;margin-bottom:16px}
+.mine-tabs button{
+  flex:1;padding:9px;border-radius:6px;cursor:pointer;
+  background:rgba(255,255,255,.04);border:1px solid rgba(212,169,78,.22);
+  color:rgba(239,223,192,.66);font-family:var(--body);font-size:11.5px;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.mine-tabs button.on{
+  background:rgba(212,169,78,.14);border-color:var(--gold);color:var(--parchment);
+}
+.mine-empty{
+  text-align:center;padding:34px 20px;font-size:13px;font-weight:300;
+  color:rgba(239,223,192,.5);line-height:1.6;
+}
+
 /* ---------- library: the cards fanned like a spread ---------- */
 .library-head{text-align:center;margin:6px 0 22px}
 .library-head h2{
@@ -752,6 +819,19 @@ body{
       <div id="reading-list"></div>
     </section>
 
+    <!-- ==== MY COLLECTION ============ -->
+    <section class="view" id="view-mine">
+      <div class="mine-head">
+        <h2 id="mine-title">Your codes</h2>
+        <p id="mine-sub"></p>
+      </div>
+      <div class="mine-tabs">
+        <button class="on" data-mine="loved">Loved</button>
+        <button data-mine="saved">Saved</button>
+      </div>
+      <div id="mine-list"></div>
+    </section>
+
     <!-- ==== LIBRARY (the spread) ============ -->
     <section class="view" id="view-library">
       <div class="library-head">
@@ -761,6 +841,23 @@ body{
       <div class="spread" id="spread"></div>
     </section>
 
+  </div>
+
+  <!-- ==== SIGN IN ============ -->
+  <div class="sheet" id="auth-sheet">
+    <div class="sheet-inner">
+      <h3 id="auth-title">Keep what speaks to you</h3>
+      <p id="auth-copy">Sign in and the codes you love or save stay with you,
+         gathered by the session they came from.</p>
+      <form id="auth-form">
+        <input type="email" id="auth-email" placeholder="you@example.com"
+               autocomplete="email" required>
+        <button class="primary" type="submit" id="auth-send">Email me a link</button>
+      </form>
+      <button class="ghost" id="auth-close">Not now</button>
+      <p class="fineprint">We email you a link to sign in — there is no password.
+         We store your email address and the codes you keep. Nothing else.</p>
+    </div>
   </div>
 
   <nav class="tabbar" id="tabbar">
@@ -791,6 +888,7 @@ body{
   quote is <b>not null</b> in the database, so a code can never be published without it.
 </p>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 /* =========================================================
    One row from the `session_cards` view in Supabase, verbatim.
@@ -839,6 +937,7 @@ const SESSIONS = [
     ],
     "wisdom_codes": [
       {
+        "id": "2481abf9-1583-416f-905c-4de3db80522e",
         "code_number": 1,
         "icon_key": "door",
         "title": "Into Me You See",
@@ -846,6 +945,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "cd46619d-e923-42c9-8cad-48609d9aa1c6",
         "code_number": 2,
         "icon_key": "star",
         "title": "What You Seek Is Seeking You",
@@ -853,6 +953,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "798fd00b-82e3-4fc8-830c-4a9badf24007",
         "code_number": 3,
         "icon_key": "flame",
         "title": "A Seam, Not a Wound",
@@ -860,6 +961,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "9645a42a-9ff9-46e3-bc19-71283a530f5b",
         "code_number": 4,
         "icon_key": "moon",
         "title": "Truth Is Not Yet Intimacy",
@@ -867,6 +969,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "209b8af1-f9f6-47bc-887a-1366a02d87e6",
         "code_number": 5,
         "icon_key": "leaf",
         "title": "Sky and Earth",
@@ -876,6 +979,7 @@ const SESSIONS = [
     ],
     "wisdom_items": [
       {
+        "id": "f07c71e9-9de0-4196-a8f8-67c19a3ef745",
         "n": 1,
         "text": "What you seek is seeking you",
         "being": "Rumi",
@@ -883,6 +987,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "18a08e8a-8140-43f4-81ed-0e73aac72a9b",
         "n": 2,
         "text": "Friendship is like a tavern for the soul where you drink without fear of intoxication because no one is measuring how much",
         "being": "Rumi",
@@ -890,6 +995,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "8fba9da7-8b87-4ee4-b16e-002b0d57d6e5",
         "n": 3,
         "text": "True friends sit with your silence, dance with your sorrow, and laugh with your joy",
         "being": "Rumi",
@@ -897,6 +1003,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "6c715a34-d676-41f7-8ca3-247461f88632",
         "n": 4,
         "text": "He was the drunk that never sobered",
         "being": "Rumi",
@@ -904,6 +1011,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Rumi"
       },
       {
+        "id": "4e7d8976-db22-4f3f-ba08-c56cbdf514f9",
         "n": 5,
         "text": "Do not take me too seriously; I'm only here to remind you that God hides in your laughter and in your kiss",
         "being": "Rumi",
@@ -911,6 +1019,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "f828022e-aae7-4748-af36-116bf474c3de",
         "n": 6,
         "text": "Intimacy is the vanishing of the veil between I and you",
         "being": "Rumi",
@@ -918,6 +1027,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "c5fcc0ab-fe78-40aa-b008-e8fab97ef258",
         "n": 7,
         "text": "Into me you see",
         "being": "Rumi",
@@ -925,6 +1035,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "a82aeee7-ed8b-4e9f-8010-7581779daf1f",
         "n": 8,
         "text": "The obstacle is not outside or sweet-it is the veil you pull over your own heart and say, if I open, I will be hurt; if I trust, I'll lose",
         "being": "Rumi",
@@ -932,6 +1043,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "714d8c2b-6716-4f0b-85f0-ad609522e8c3",
         "n": 9,
         "text": "The hurt and the loss are only shadows of your mind",
         "being": "Rumi",
@@ -939,6 +1051,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "b7e5e780-ac99-4b42-b02e-248e642a70dc",
         "n": 10,
         "text": "Intimacy is a natural state; you were born in union",
         "being": "Rumi",
@@ -946,6 +1059,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "04b72d7c-799d-4ab8-b0b2-2346fa3c5f8b",
         "n": 11,
         "text": "The obstacle is the illusion of separateness",
         "being": "Rumi",
@@ -953,6 +1067,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "5d07c380-17d5-45ea-9858-801ac44737be",
         "n": 12,
         "text": "The belief that you must protect yourself",
         "being": "Rumi",
@@ -960,6 +1075,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "fd3251bc-f77f-4207-bfd1-23d5bd6ab5ad",
         "n": 13,
         "text": "Love is not the enemy; fear is the enemy dressed as a friend",
         "being": "Rumi",
@@ -967,6 +1083,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "54617f4b-98f3-46d3-879f-125e11d2364f",
         "n": 14,
         "text": "Drop the veil; even if your heart aches, let yourself be seen",
         "being": "Rumi",
@@ -974,6 +1091,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "f1f0a815-6708-4859-9cdc-2fe8dae458f2",
         "n": 15,
         "text": "What you think will destroy you is the very thing that will free you",
         "being": "Rumi",
@@ -981,6 +1099,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "442124ea-22f8-4b25-8148-dc133884f59f",
         "n": 16,
         "text": "When two souls or more forget themselves, joy is what spills in that moment",
         "being": "Rumi",
@@ -988,6 +1107,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "7eb6ef4f-f4c6-431d-ba85-726c577111c6",
         "n": 17,
         "text": "The intimacy is the vanishing of the veil between I and you, tied to authenticity",
         "being": "Rumi",
@@ -995,6 +1115,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "9004c079-f81b-4448-999e-5c9607d0600c",
         "n": 18,
         "text": "Abundance is how many times you can say yes to the mystery, yes to the shaky, yes to the divine-the divine lover hiding inside each glance",
         "being": "Rumi",
@@ -1002,6 +1123,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "c7e165df-1986-4a77-b63b-cd7952f895d2",
         "n": 19,
         "text": "When you are willing to say yes endlessly, you overflow",
         "being": "Rumi",
@@ -1009,6 +1131,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "ccc7ddfd-1291-4c23-911f-c8574990b0ac",
         "n": 20,
         "text": "We are all afraid to become foolish, and this is a little prison of our own",
         "being": "Rumi",
@@ -1016,6 +1139,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "0a3b5039-92f8-4a27-a66c-968b7b6a82e1",
         "n": 21,
         "text": "Spin until the room's dizzy; sing until your throat cracks; and kiss until time disappears",
         "being": "Rumi",
@@ -1023,6 +1147,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "dee51feb-7d38-476c-aaca-08862af98d15",
         "n": 22,
         "text": "When the body moves without shame, it's a prayer; it's its own melody",
         "being": "Rumi",
@@ -1030,6 +1155,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "cafae24c-a750-46ad-880a-e910bc283612",
         "n": 23,
         "text": "When I whirl, I'm not dancing; I'm falling into God",
         "being": "Rumi",
@@ -1037,6 +1163,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "05658758-8245-4cfa-84eb-8f0e5cd78b1c",
         "n": 24,
         "text": "Your modern bodies still know this secret; if you let them move without a script, they know freedom",
         "being": "Rumi",
@@ -1044,6 +1171,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "c9f5b29a-ec7e-4879-bec3-c32ed642b982",
         "n": 25,
         "text": "Freedom begins when the body remembers its own rhythm",
         "being": "Rumi",
@@ -1051,6 +1179,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "123b4718-c916-474a-a73e-928b7b87d450",
         "n": 26,
         "text": "If what is believed is always reflected back, to believe that we ourselves are in some way flawed, inappropriate, unsavory-when we believe these things about ourselves and a desire is born, the feeling reflected back is that this must also be flawed",
         "being": "Rumi",
@@ -1058,6 +1187,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "05103721-2d02-41ab-a606-2654b896b1f7",
         "n": 27,
         "text": "It is both the perspective on the self and the perspective on the desire that compounds into an exponential perception and feeling of embarrassment and shame",
         "being": "Rumi",
@@ -1065,6 +1195,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "85ebb7ff-1683-48e3-b32b-ead236b58201",
         "n": 28,
         "text": "The soul and the body are conspirators in truth",
         "being": "Rumi",
@@ -1072,6 +1203,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "7b10466a-b847-49ff-bb72-a1fb04f1fb65",
         "n": 29,
         "text": "A romantic relationship is lived with freedom where desire is not chained by fear",
         "being": "Rumi",
@@ -1079,6 +1211,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "6f56e339-9d42-4922-9376-9745af66779e",
         "n": 30,
         "text": "Speaking the truth-it's not always being comfortable or easy, but choose honesty over security",
         "being": "Rumi",
@@ -1086,6 +1219,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "d2596eb3-5331-4349-b770-a87d5bc0e835",
         "n": 31,
         "text": "Allow the other to grow in unpredictable directions; if one wishes to paint, travel, or explore another or something else, the other does not clutch but asks, how can I walk beside your becoming?",
         "being": "Rumi",
@@ -1093,6 +1227,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "6bc0a3f8-1202-4305-b46f-dc72abe3722c",
         "n": 32,
         "text": "Freedom in this relationship means permission to change, to desire, even to risk longing for others without threat of punishment",
         "being": "Rumi",
@@ -1100,6 +1235,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "bd3ef6fd-812b-4159-a599-90257d498d25",
         "n": 33,
         "text": "It does not mean chaos; it means choosing that relationship each day, not because of contract, but because the soul still whispers yes",
         "being": "Rumi",
@@ -1107,6 +1243,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "983b89a0-d9c0-4daa-8f94-6c405afb374e",
         "n": 34,
         "text": "It is dangerous only because it asks you to be alive in every moment instead of embalmed in certainty",
         "being": "Rumi",
@@ -1114,6 +1251,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "cf1a3278-64af-44e8-bfb9-f391ca4dd204",
         "n": 35,
         "text": "Look at the sky and the earth; they're married since the beginning of time",
         "being": "Rumi",
@@ -1121,6 +1259,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "cb18f9aa-9f09-4296-bb32-9f3a653caeb4",
         "n": 36,
         "text": "The sky gives rain, the earth gives flowers",
         "being": "Rumi",
@@ -1128,6 +1267,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "bab2e097-f8b8-48ab-b89a-9dd09821758a",
         "n": 37,
         "text": "They do not bind each other, yet they cannot be apart",
         "being": "Rumi",
@@ -1135,6 +1275,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "c90245a9-3daa-403f-a817-4fc8b297bd5e",
         "n": 38,
         "text": "A free relationship is like a dance of giving and receiving without chains",
         "being": "Rumi",
@@ -1142,6 +1283,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "02e78267-9463-4f6e-91b4-9712bc0af240",
         "n": 39,
         "text": "Each one is the guest and the host, the student and the teacher",
         "being": "Rumi",
@@ -1149,6 +1291,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "6cca0c1a-8e33-40ef-9723-68c7c78bef4c",
         "n": 40,
         "text": "In freedom, one rejoices when the other is radiant, even if the light comes from another sun",
         "being": "Rumi",
@@ -1156,6 +1299,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "fbb40ca5-6f7e-4b91-a151-f8f5df74d48e",
         "n": 41,
         "text": "They trust that what is true will not leave, and what leaves was never meant to stay",
         "being": "Rumi",
@@ -1163,6 +1307,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "47789ce4-0104-4ebc-83d4-602f6a73c53d",
         "n": 42,
         "text": "The excitement does not fade because each day each one appears in a new face",
         "being": "Rumi",
@@ -1170,6 +1315,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "6b5532b3-1794-464c-b37e-6c7080d3df96",
         "n": 43,
         "text": "To live this way is to love not the form, but the essence",
         "being": "Rumi",
@@ -1177,6 +1323,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "0223311e-b8de-4540-b232-cca80098fb3d",
         "n": 44,
         "text": "Marriage is a bowl-a vessel where you pour joy, your fears, your hunger",
         "being": "Rumi",
@@ -1184,6 +1331,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "f051228a-09b2-4c0d-8ac9-be4754b43b18",
         "n": 45,
         "text": "The bowl isn't the issue; it's how you use it",
         "being": "Rumi",
@@ -1191,6 +1339,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "df97d98b-6f25-43dc-9077-ced669b27bb2",
         "n": 46,
         "text": "Many turn it to a prison, forgetting that the door was never locked",
         "being": "Rumi",
@@ -1198,6 +1347,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "f9ed7b19-6846-40b3-8d59-d31b6b668654",
         "n": 47,
         "text": "Others abandoned the bowl when the wine is gone, not realizing that they themselves were supposed to refill it",
         "being": "Rumi",
@@ -1205,6 +1355,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "6471ca16-f973-48fc-a277-37f2e766bcfd",
         "n": 48,
         "text": "Passion is movement; it is difficult to maintain in this relationship because marriage desires stillness",
         "being": "Rumi",
@@ -1212,6 +1363,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "2f1be116-0dba-4ef8-9a8f-2a8b8b15c859",
         "n": 49,
         "text": "What if you let passion be the wind that shakes the bowl?",
         "being": "Rumi",
@@ -1219,6 +1371,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "5db5bc89-5f96-4dd0-954c-dddda613192c",
         "n": 50,
         "text": "Instead of fearing the ebb and flow, celebrate it",
         "being": "Rumi",
@@ -1226,6 +1379,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "39b67755-0641-4a2c-a41c-78edf72a3380",
         "n": 51,
         "text": "If you only see your partner in the same way, to look at the same face every day, you forget the infinite within them",
         "being": "Rumi",
@@ -1233,6 +1387,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "062faacb-8960-4715-a543-3c678609fa80",
         "n": 52,
         "text": "See them new each day and you will be surprised every morning with their kiss",
         "being": "Rumi",
@@ -1240,6 +1395,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "f3fcdcd6-21b2-411c-b218-9e0d67d516c2",
         "n": 53,
         "text": "There are inherent roles in our DNA, just as many other things; even the fear of rejection meant death",
         "being": "Rumi",
@@ -1247,6 +1403,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "b1fff98f-8435-40c8-a9f6-3aa3ddf81811",
         "n": 54,
         "text": "Modern relationships are not ignoring these roles; you are shifting them, blending them, allowing freedom within them, allowing individual uniqueness and expression",
         "being": "Rumi",
@@ -1254,6 +1411,7 @@ const SESSIONS = [
         "attribution": "Rumi — in their words"
       },
       {
+        "id": "0d34db60-1778-4292-a6d6-a91b9d0efe3b",
         "n": 55,
         "text": "Life shrinks or expands according to your courage",
         "being": "Anaïs Nin",
@@ -1261,6 +1419,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "5fe31e66-8ec0-4b84-a05b-b96dd2f0c63e",
         "n": 56,
         "text": "Friendship is intimacy without the cloak of possession",
         "being": "Anaïs Nin",
@@ -1268,6 +1427,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "ddb29031-454b-4b4d-834d-75c34002f761",
         "n": 57,
         "text": "It allows the heart to open without the weight of expectation",
         "being": "Anaïs Nin",
@@ -1275,6 +1435,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "c9b76449-d8b6-4269-b61f-5b7323a33208",
         "n": 58,
         "text": "In her life, her friendships were many times as transformative as her loves",
         "being": "Anaïs Nin",
@@ -1282,6 +1443,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "fbb86626-a39a-4af0-a893-6bd617df9899",
         "n": 59,
         "text": "The mirror to see her soul without the adornments of seduction",
         "being": "Anaïs Nin",
@@ -1289,6 +1451,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "a4001289-990a-4c34-8d5a-f6f1931eb176",
         "n": 60,
         "text": "If I were writing about you, I would not describe faces or names; I would describe the hunger in your eyes",
         "being": "Anaïs Nin",
@@ -1296,6 +1459,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "a35f1156-249d-4372-974f-673ab585c2eb",
         "n": 61,
         "text": "The way they shine with questions too daring for ordinary conversation",
         "being": "Anaïs Nin",
@@ -1303,6 +1467,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "164e72f3-c9f4-4e15-9bb0-7db44439c1fd",
         "n": 62,
         "text": "I would write that you are a band of seekers who wish to love as if it were both a revolution and a prayer",
         "being": "Anaïs Nin",
@@ -1310,6 +1475,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "6ad2a7b7-b593-4bdd-a353-9a6b1d2ce0ef",
         "n": 63,
         "text": "I would write that today in this circle, joy is dressed in a gown of mystery",
         "being": "Anaïs Nin",
@@ -1317,6 +1483,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "15701b73-7e5b-438d-b2f8-313386838181",
         "n": 64,
         "text": "Intimacy is the courage to be seen in your own contradictions",
         "being": "Anaïs Nin",
@@ -1324,6 +1491,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "426dbc04-11cd-4bd1-9530-5dd662aa276e",
         "n": 65,
         "text": "Not just the bearing of the skin, the outside, but the unveiling of the soul's shifting landscapes",
         "being": "Anaïs Nin",
@@ -1331,6 +1499,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "66b3a751-146e-417b-b803-889f3c744708",
         "n": 66,
         "text": "It is to allow another to witness your chaos and your poetry, your fears and your fire without disguise",
         "being": "Anaïs Nin",
@@ -1338,6 +1507,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "7427171d-290e-49b9-82e9-4f57dd423b85",
         "n": 67,
         "text": "It is not the endless revealing of facts, but the endless revealing of feelings",
         "being": "Anaïs Nin",
@@ -1345,6 +1515,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "f6c23fbe-9f85-48ab-863e-63031f48fd1e",
         "n": 68,
         "text": "One can tell the truth and still be a stranger",
         "being": "Anaïs Nin",
@@ -1352,6 +1523,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "676ac7ff-c964-4fb5-9586-15a07afe7196",
         "n": 69,
         "text": "One can tell a dream, a secret longing, and become a lover",
         "being": "Anaïs Nin",
@@ -1359,6 +1531,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "3fefb45c-97a8-4df6-8855-8282a86d9c5b",
         "n": 70,
         "text": "Intimacy is the diary written in the presence of another; it is the art of letting yourself be read",
         "being": "Anaïs Nin",
@@ -1366,6 +1539,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "93f93e4d-4aef-44da-bad7-c54e5c4ceba3",
         "n": 71,
         "text": "The greatest obstacle is the fear of exposure-to be truly seen in our contradictions, hunger, and shadows",
         "being": "Anaïs Nin",
@@ -1373,6 +1547,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "430a90e5-3a9f-445e-975d-086e76f6413a",
         "n": 72,
         "text": "We fear we will not be loved and will be abandoned",
         "being": "Anaïs Nin",
@@ -1380,6 +1555,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "638127b5-1deb-4e2c-9db6-22890800f55e",
         "n": 73,
         "text": "So we disguise ourselves with roles, lies, performances, and identity",
         "being": "Anaïs Nin",
@@ -1387,6 +1563,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "372539d9-380b-40ff-9384-290477e2df2f",
         "n": 74,
         "text": "Intimacy does not die from a lack of time or even a lack of sex, if that's a part of it",
         "being": "Anaïs Nin",
@@ -1394,6 +1571,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "2c58078e-befa-4ede-bc6a-4c3b61ea5754",
         "n": 75,
         "text": "It dies from masks",
         "being": "Anaïs Nin",
@@ -1401,6 +1579,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "6d4c750c-9919-4d3b-a173-66fc880840ae",
         "n": 76,
         "text": "The moment we hide, the moment we censor our true self to remain acceptable",
         "being": "Anaïs Nin",
@@ -1408,6 +1587,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "14719755-bc5a-415a-be55-5491790875b8",
         "n": 77,
         "text": "The obstacle isn't a lack of love; it's the terror of being found unworthy once you are revealed",
         "being": "Anaïs Nin",
@@ -1415,6 +1595,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "68f22c85-6567-405e-8f05-1ccfe3a733b7",
         "n": 78,
         "text": "That ache is because love stretches you; it's the body's protest against expansion",
         "being": "Anaïs Nin",
@@ -1422,6 +1603,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "67dee1b2-6f03-430c-92bf-ba1b51a5b4b0",
         "n": 79,
         "text": "Like the tightness of new wings pressing against skin",
         "being": "Anaïs Nin",
@@ -1429,6 +1611,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "05cdc523-2759-4119-94df-bb15cc46cf09",
         "n": 80,
         "text": "To love is to become larger than the container of the old self",
         "being": "Anaïs Nin",
@@ -1436,6 +1619,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "85224b62-291e-4316-b4f5-cb92da4e0947",
         "n": 81,
         "text": "The ache is not a wound; it is a seam where you are being remade",
         "being": "Anaïs Nin",
@@ -1443,6 +1627,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "c7b7b6e8-d62c-410c-a745-33c0d5dd47c0",
         "n": 82,
         "text": "The divine has carved a flute from your chest so longing can become a melody",
         "being": "Anaïs Nin",
@@ -1450,6 +1635,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "762b0f47-3eb5-4f4f-a3da-22d4f7d92e75",
         "n": 83,
         "text": "Do not fear it; the ache is proof you are alive, proof you are becoming a channel for something greater than yourself",
         "being": "Anaïs Nin",
@@ -1457,6 +1643,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "e2203cfc-0cf3-4bee-8aa0-241cd60b6681",
         "n": 84,
         "text": "Celebrate it; it means your heart is in motion, stretching toward the infinite",
         "being": "Anaïs Nin",
@@ -1464,6 +1651,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "6e7c00e6-dc0e-4635-8e9a-65a2b352fe16",
         "n": 86,
         "text": "Desire is an honest part of you; it is, in a sense, the most honest part",
         "being": "Anaïs Nin",
@@ -1471,6 +1659,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "0b7ea011-be11-40cc-b2f2-303808a72102",
         "n": 87,
         "text": "When you take desire out of hiding, you speak it, paint it, dance it-even if no one else sees it, it becomes sacred",
         "being": "Anaïs Nin",
@@ -1478,6 +1667,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "33e30ff0-b42f-4eca-84a1-ee83b5b52e88",
         "n": 88,
         "text": "It becomes holy, and shame and secrecy die in that light of expression",
         "being": "Anaïs Nin",
@@ -1485,6 +1675,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "055aee3b-8546-4e32-8dd0-5878473ef7f2",
         "n": 89,
         "text": "Authenticity is not about confession; it is about expression",
         "being": "Anaïs Nin",
@@ -1492,6 +1683,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "dcdfa884-f751-4ec0-a510-c1bc19e83137",
         "n": 90,
         "text": "Shame is contagious; it's been stitched into mass consciousness for centuries, especially around topics of money, truth, desire, and sex",
         "being": "Anaïs Nin",
@@ -1499,6 +1691,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "120e625f-bffd-4c9e-ae30-e3906376e14f",
         "n": 91,
         "text": "It's woven from fear of rejection and the need for control",
         "being": "Anaïs Nin",
@@ -1506,6 +1699,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "e114ec4b-ef30-4c8b-8477-14500656bcaa",
         "n": 92,
         "text": "Children inherit it before they even know their words, simply by sensing what is not spoken",
         "being": "Anaïs Nin",
@@ -1513,6 +1707,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "07b2a041-cd6a-41d1-be55-6294c9c4ca6c",
         "n": 93,
         "text": "In mass consciousness, it functions as a silencer; it makes intimacy dangerous, creativity suspect, and honesty scandalous",
         "being": "Anaïs Nin",
@@ -1520,6 +1715,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "c8ba0f55-c41e-42fa-926d-24c2e82f682c",
         "n": 94,
         "text": "Every time one of you dares to speak openly, to live transparently, a thread of that is pulled loose",
         "being": "Anaïs Nin",
@@ -1527,6 +1723,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "be1d04bc-1f3f-432b-b751-920c63012cb9",
         "n": 95,
         "text": "The more you do this, the more free and bare the collective becomes",
         "being": "Anaïs Nin",
@@ -1534,6 +1731,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "95db31c1-b306-4b78-97f8-0f56194a3974",
         "n": 96,
         "text": "Freedom doesn't mean the absence of bonds in any sort of relationships or friendships; it doesn't mean the absence of bonds",
         "being": "Anaïs Nin",
@@ -1541,6 +1739,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "1cd8ed59-cff7-476b-b5ae-cfedf6df4097",
         "n": 97,
         "text": "It means the bonds we choose must be elastic enough to allow us to breathe",
         "being": "Anaïs Nin",
@@ -1548,6 +1747,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "52662d9c-1716-418c-868d-a32110e8897a",
         "n": 98,
         "text": "Love can be multiple, layered, contradictory",
         "being": "Anaïs Nin",
@@ -1555,6 +1755,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "bade8422-6515-426d-9398-bd709353e242",
         "n": 99,
         "text": "It doesn't need to be confined to a single definition",
         "being": "Anaïs Nin",
@@ -1562,6 +1763,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "f0c9efc8-309e-46dd-bc0f-93a1f5a80103",
         "n": 100,
         "text": "When we love each other freely, we give each other not a prison, but a key",
         "being": "Anaïs Nin",
@@ -1569,6 +1771,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "a772301a-1667-498f-9061-7f8da13c5e5a",
         "n": 101,
         "text": "Part of freedom is the courage to reveal our secret longings",
         "being": "Anaïs Nin",
@@ -1576,6 +1779,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "24bc98a6-95b5-479f-850d-e30f5113c363",
         "n": 102,
         "text": "Spiritual authenticity is the courage to reveal our secret selves",
         "being": "Anaïs Nin",
@@ -1583,6 +1787,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "06c83f75-6961-4028-8893-6f667ca53fbe",
         "n": 103,
         "text": "They're twins; one reveals the physical body and one reveals the soul",
         "being": "Anaïs Nin",
@@ -1590,6 +1795,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "97d12f5a-37c3-4352-9723-71a26d7b3aa5",
         "n": 104,
         "text": "Both are dangerous, but both are liberating",
         "being": "Anaïs Nin",
@@ -1597,6 +1803,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "f4f4d12c-5ff7-4a2d-b544-bc2b9ac6a1d6",
         "n": 105,
         "text": "One cannot exist fully without the other",
         "being": "Anaïs Nin",
@@ -1604,6 +1811,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "61c41ea5-fcd9-4887-a01a-55b48233584e",
         "n": 106,
         "text": "Marriage or commitment in this type of relationship is a paradox",
         "being": "Anaïs Nin",
@@ -1611,6 +1819,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "707b1ba2-da2e-4bb2-8fd2-876d77a7b813",
         "n": 107,
         "text": "It promises stability to a force that thrives on change",
         "being": "Anaïs Nin",
@@ -1618,6 +1827,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "596fd6e2-cfd3-45e3-8cab-9c27ce11a75b",
         "n": 108,
         "text": "Passion is a flame; it needs air, mystery, risk",
         "being": "Anaïs Nin",
@@ -1625,6 +1835,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "32bfe4ee-a4f2-425f-8cbc-13caac128f32",
         "n": 109,
         "text": "Marriage often builds walls to protect the flame, and in doing that, it smothers it",
         "being": "Anaïs Nin",
@@ -1632,6 +1843,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "e185c3da-5ca9-4241-b6a5-fb7a6711c111",
         "n": 110,
         "text": "The difficulty is not in the love itself, but in the expectations we strap into permanence, exclusivity, and predictability",
         "being": "Anaïs Nin",
@@ -1639,6 +1851,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "9bb29bfe-b1ca-470e-92cb-fa6ea9e3208f",
         "n": 111,
         "text": "In marriages, excitement fades not because desire dies, but because each one stops feeding it with imagination",
         "being": "Anaïs Nin",
@@ -1646,6 +1859,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "28b268d2-8ac1-46e8-8568-9f9d85f030a3",
         "n": 112,
         "text": "We forget to seduce; we believe possession replaces pursuit",
         "being": "Anaïs Nin",
@@ -1653,6 +1867,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "cc4c1fe9-07be-4a2b-ac9c-ebefdf5a7e90",
         "n": 113,
         "text": "Safety replaces danger",
         "being": "Anaïs Nin",
@@ -1660,6 +1875,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "d83b96f3-55f0-4faf-82e0-9c68df65f90e",
         "n": 114,
         "text": "Desire craves novelty, secrecy, risk; it craves to be surprised",
         "being": "Anaïs Nin",
@@ -1667,6 +1883,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "117e745d-e746-4a30-8654-e9973aae95a2",
         "n": 115,
         "text": "If you wish for passion to remain inside commitment, then treat your partner as an ever-changing character, not a finished story",
         "being": "Anaïs Nin",
@@ -1674,6 +1891,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "a8a0a6db-6f55-46cb-948a-eda8ed1fe7e3",
         "n": 116,
         "text": "Court them again and again",
         "being": "Anaïs Nin",
@@ -1681,6 +1899,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "a4d611c2-3dbb-4667-84a8-4df7326da8d2",
         "n": 117,
         "text": "Keep mystery alive even inside routine",
         "being": "Anaïs Nin",
@@ -1688,6 +1907,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "ffd3b49f-747d-410f-afcb-6a4b56e12e98",
         "n": 118,
         "text": "Love thrives on repetition, but desire thrives on reinvention",
         "being": "Anaïs Nin",
@@ -1695,6 +1915,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "679218c4-7852-436e-92dd-6916dbdd71a2",
         "n": 119,
         "text": "Intimacy thrives in transparency but delights in mystery",
         "being": "Anaïs Nin",
@@ -1702,6 +1923,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "9e3d288e-6d08-4157-bd25-f6dda28c6bd3",
         "n": 120,
         "text": "The art is knowing which secrets are petals and which are walls",
         "being": "Anaïs Nin",
@@ -1709,6 +1931,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "f9d87cba-bf7e-4426-8c37-cdb6a8201f0a",
         "n": 121,
         "text": "Share the truths that set you free and guard only the mysteries that make you shimmer",
         "being": "Anaïs Nin",
@@ -1716,6 +1939,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "b114d461-f6be-4087-8bc7-76d4d2d03b72",
         "n": 122,
         "text": "In this way, intimacy and secrecy can dance without betraying each other",
         "being": "Anaïs Nin",
@@ -1723,6 +1947,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "cbe7f6e7-7925-44ff-a096-86c3e20015f9",
         "n": 123,
         "text": "We were asking, and this is where we are being asked to lead",
         "being": "Anaïs Nin",
@@ -1730,6 +1955,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "4169eff5-0b09-41c3-ace1-c8abe9a43f1b",
         "n": 124,
         "text": "To shine, to share",
         "being": "Anaïs Nin",
@@ -1737,6 +1963,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "e4f8dcd5-f176-4a1c-b0a3-44e85cc49d16",
         "n": 125,
         "text": "If I could choose a symbol for your group, it would be a ripe pomegranate",
         "being": "Anaïs Nin",
@@ -1744,6 +1971,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "5d119469-e598-4779-ad31-42b39df57282",
         "n": 126,
         "text": "Outside, a simple skin; inside, countless seeds shining with sweetness",
         "being": "Anaïs Nin",
@@ -1751,6 +1979,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "9cf64757-eb33-428c-8998-6e4e1e04241f",
         "n": 127,
         "text": "You are this one circle, many jewels",
         "being": "Anaïs Nin",
@@ -1758,6 +1987,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "def14b47-4d48-41da-a6e4-0c4405b97f4f",
         "n": 128,
         "text": "Within each of you is a seed of passion, authenticity, of divine sweetness",
         "being": "Anaïs Nin",
@@ -1765,6 +1995,7 @@ const SESSIONS = [
         "attribution": "Anaïs Nin — in their words"
       },
       {
+        "id": "4cd18eb3-a349-4afa-a1a7-cf505ad80265",
         "n": 129,
         "text": "Break yourselves open together and the juice will stain your hands with joy",
         "being": "Anaïs Nin",
@@ -1803,6 +2034,7 @@ const SESSIONS = [
     ],
     "wisdom_codes": [
       {
+        "id": "a0ca6290-af54-4d71-a77a-4de178d747b3",
         "code_number": 1,
         "icon_key": "key",
         "title": "The Paradox Is for Living",
@@ -1810,6 +2042,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "81e3c8aa-ad35-42ca-8457-45af5e672540",
         "code_number": 2,
         "icon_key": "moon",
         "title": "Bite Your Own Teeth",
@@ -1817,6 +2050,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "72f62699-bc53-4402-aaf7-5a34d12c9ee7",
         "code_number": 3,
         "icon_key": "wave",
         "title": "Doing Nothing, Discovering Everything",
@@ -1824,6 +2058,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "5cf83ffe-7354-448b-8ce1-a723a196f932",
         "code_number": 4,
         "icon_key": "leaf",
         "title": "Wounds Are the Roots",
@@ -1831,6 +2066,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "2fb307e5-851b-40ec-8a51-69d6ad764474",
         "code_number": 5,
         "icon_key": "flame",
         "title": "Suffering Became My Paint",
@@ -1840,6 +2076,7 @@ const SESSIONS = [
     ],
     "wisdom_items": [
       {
+        "id": "9363e11c-2e48-424f-91b9-b6ef9ed2ca43",
         "n": 1,
         "text": "To hold on, you must let go",
         "being": "Alan Watts",
@@ -1847,6 +2084,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "80702cdc-0afd-42ec-8a68-d489ea399f25",
         "n": 2,
         "text": "The menu is not the meal",
         "being": "Alan Watts",
@@ -1854,6 +2092,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "56be8c1e-ba1a-41cc-9c77-036a6eadcfbe",
         "n": 3,
         "text": "The moment you try to grasp it, it slips away. And the moment you let it go, you live it effortlessly",
         "being": "Alan Watts",
@@ -1861,6 +2100,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "32656674-ed12-4cba-99b0-bbb0a70f397f",
         "n": 4,
         "text": "Begin not with serious thinking, but with a smile. The smile that comes when you realize that you are the joke, the puzzle and the answer all at once",
         "being": "Alan Watts",
@@ -1868,6 +2108,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "4217694e-372e-4b00-abb6-598aeb95d4ed",
         "n": 5,
         "text": "God is both everything and nothing, within you and beyond you",
         "being": "Alan Watts",
@@ -1875,6 +2116,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "978dc2db-1dc8-4298-8d42-ef3815186ac3",
         "n": 6,
         "text": "The paradox is not for understanding. It's for living",
         "being": "Alan Watts",
@@ -1882,6 +2124,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "cd4d1935-24f1-406a-a554-fe1bef231b2d",
         "n": 7,
         "text": "First to laugh at it. Resistance is coming from our minds' demand to have certainty, to understand, to know",
         "being": "Alan Watts",
@@ -1889,6 +2132,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "6e2967db-8f4c-4b24-9586-954d19a93c44",
         "n": 8,
         "text": "If you can smile when you encounter the absurd-I am both free and bound, both alive and dying-then you are living in a paradox instead of fighting it",
         "being": "Alan Watts",
@@ -1896,6 +2140,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "6c74cdd4-13ae-440e-99e3-985edc35329d",
         "n": 9,
         "text": "Because the paradox cracks the shell of the logical mind. It forces us beyond our categorizing and labeling",
         "being": "Alan Watts",
@@ -1903,6 +2148,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "e89fa8e1-5542-483e-9fd2-d8a8f6531f39",
         "n": 10,
         "text": "Directly trying to define yourself is like trying to bite your own teeth",
         "being": "Alan Watts",
@@ -1910,6 +2156,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "59b85fed-0fc0-4264-972e-dbb8cc8c97a2",
         "n": 11,
         "text": "The paradox is that they are different and not different at all",
         "being": "Alan Watts",
@@ -1917,6 +2164,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "7b0b8433-7bea-4321-a977-8971b51369db",
         "n": 12,
         "text": "In a dream, you walk in a world that feels real until you wake up. And in our life, we walk in a world that feels real until we die",
         "being": "Alan Watts",
@@ -1924,6 +2172,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "a837c214-de14-453c-b87c-75f2bcf20616",
         "n": 13,
         "text": "Both are expressions of consciousness. Both are reality wearing a different face",
         "being": "Alan Watts",
@@ -1931,6 +2180,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "f95ab066-edab-4f3a-8d56-d146f31f7e42",
         "n": 14,
         "text": "They're not two rooms. They're one big house. One lit by the sun, one lit by the moon",
         "being": "Alan Watts",
@@ -1938,6 +2188,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "a2f8be19-8a6a-4ae5-892a-8252a9e022ad",
         "n": 15,
         "text": "Treat your dreams not as a fantasy, but just another doorway to the same mystery",
         "being": "Alan Watts",
@@ -1945,6 +2196,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "b00d1592-50f4-4e1c-9490-29e6016b2c2e",
         "n": 16,
         "text": "The paradox of meditation is that it takes you inward and connects you outward",
         "being": "Alan Watts",
@@ -1952,6 +2204,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "85e48c17-e729-45c4-a2e2-e87da7df30f6",
         "n": 17,
         "text": "In silence, you meet the whole universe",
         "being": "Alan Watts",
@@ -1959,6 +2212,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "5c3ff6d4-2acb-42fc-a354-16120580e3e4",
         "n": 18,
         "text": "Meditation is the art of doing nothing to discover everything",
         "being": "Alan Watts",
@@ -1966,6 +2220,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "5c499c89-f521-42a0-bf85-7e93b30b8af0",
         "n": 19,
         "text": "It's surrender that becomes the greatest power. It is the silence that brings the loudest truth",
         "being": "Alan Watts",
@@ -1973,6 +2228,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "2f212492-68f1-4158-8efe-5845b35542c8",
         "n": 20,
         "text": "Everything is a paradox. If everything is a paradox, then paradox ceases to be a paradox and becomes just nature",
         "being": "Alan Watts",
@@ -1980,6 +2236,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "21d42f5e-bb55-44d0-a3ac-2a7767a66e96",
         "n": 21,
         "text": "Paradox is the basis of creation. It's the positive and negative",
         "being": "Alan Watts",
@@ -1987,6 +2244,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "024879f6-bf2e-49dc-b069-f27b4cfcc4ec",
         "n": 22,
         "text": "The moment you try to be serious about having fun, the fun disappears",
         "being": "Alan Watts",
@@ -1994,6 +2252,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "b83c0c56-083d-4056-b55b-2d9240ad6334",
         "n": 23,
         "text": "Fun happens when you stop trying, when you slip into the moment",
         "being": "Alan Watts",
@@ -2001,6 +2260,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "918bafaa-6c05-4350-8fae-56c800b838a3",
         "n": 24,
         "text": "The paradox only guides you by loosening your grip",
         "being": "Alan Watts",
@@ -2008,6 +2268,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "c548df53-82d7-4222-ad4a-8c758f1f4d1e",
         "n": 25,
         "text": "Instead of one side of the contradiction, you practice going in between",
         "being": "Alan Watts",
@@ -2015,6 +2276,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "18613143-0ea9-4bfe-8895-2d3818fc4526",
         "n": 26,
         "text": "Too much freedom is chaos. Too much structure is a prison, but together, it's like art",
         "being": "Alan Watts",
@@ -2022,6 +2284,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "0238c1df-7fba-4ec8-9ba0-548992a46fc8",
         "n": 27,
         "text": "The paradox is your compass pointing, but not to certainty. Pointing you to balance",
         "being": "Alan Watts",
@@ -2029,6 +2292,7 @@ const SESSIONS = [
         "attribution": "Alan Watts — in their words"
       },
       {
+        "id": "b6d417d4-f9bb-44e1-901b-0a13e7e6e38f",
         "n": 28,
         "text": "When suffering became my paint, paint became my freedom",
         "being": "Frida Kahlo",
@@ -2036,6 +2300,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "328ed5e4-95ee-4c6f-a9a0-f847eb8d4ffc",
         "n": 29,
         "text": "Your wounds are nothing to fear. They are the roots of your beauty",
         "being": "Frida Kahlo",
@@ -2043,6 +2308,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "2a66551e-0f2f-42a0-b90c-260d3ed46fcf",
         "n": 30,
         "text": "Your scars, visible and invisible. They are your colors",
         "being": "Frida Kahlo",
@@ -2050,6 +2316,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "e5b4bde8-5b5d-4b07-bc78-a4afa0c8f5a9",
         "n": 31,
         "text": "It's making art from it. Don't turn away from one side, the wound or the beauty. Put them both on a canvas and then you are expressing",
         "being": "Frida Kahlo",
@@ -2057,6 +2324,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "a2cf7157-d206-4761-b04d-e9834cdf24be",
         "n": 32,
         "text": "It is not meant to be solved. It's meant to be expressed",
         "being": "Frida Kahlo",
@@ -2064,6 +2332,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "9af56d9a-eea4-42d2-bddb-aaf47289093b",
         "n": 33,
         "text": "Because paradox refuses to let you stay small. The tension stretches you open and allows you to touch or create from places that you would never have touched otherwise",
         "being": "Frida Kahlo",
@@ -2071,6 +2340,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "5326cf86-a672-4536-b864-d678c11f9a24",
         "n": 34,
         "text": "We both came to teach paradox by living it. We weren't meant to erase them. We were meant to magnify them, to let them be seen",
         "being": "Frida Kahlo",
@@ -2078,6 +2348,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "8c2c7a58-b37e-41c2-8d4a-0536194bb353",
         "n": 35,
         "text": "So that others could find themselves in the mirror of that. Both of our pre-birth intentions are very much to remind humanity that the wound and the wonder were not two separate things. They were one thing",
         "being": "Frida Kahlo",
@@ -2085,6 +2356,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "488cd8b9-3de2-40f1-9a3c-7bccc3a27c9a",
         "n": 36,
         "text": "Her eyebrows were not decoration. They were shields. Antennas. Between eyes, between worlds",
         "being": "Frida Kahlo",
@@ -2092,6 +2364,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Frida Kahlo"
       },
       {
+        "id": "324d7a62-cdb1-4f18-8751-a210435629c9",
         "n": 37,
         "text": "You have no eyebrows. Good. Then you have nothing to hide behind. Your face is pure truth. No filter, no disguise. I had too many. You have none. Balance. Together. One. Together, one paradox",
         "being": "Frida Kahlo",
@@ -2099,6 +2372,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "13958637-9048-44a3-a37c-a0974abfa0b1",
         "n": 38,
         "text": "Fun is both fragile and fierce at the same time",
         "being": "Frida Kahlo",
@@ -2106,6 +2380,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "e084859e-05f7-4bf6-8177-ad9adcfc3ff9",
         "n": 39,
         "text": "Even in that she did return. And the paradox is that she did not specifically as Frida in a body, again as Frida, but in stories inside every woman or person who doesn't hide their scars in colors",
         "being": "Frida Kahlo",
@@ -2113,6 +2388,7 @@ const SESSIONS = [
         "attribution": "Frida Kahlo — in their words"
       },
       {
+        "id": "1b791391-7ced-452a-9184-5ec46bc191ac",
         "n": 40,
         "text": "She continues to live. Even as everyone remembers her. At any time that we remember her, she continues to live",
         "being": "Frida Kahlo",
@@ -2151,6 +2427,7 @@ const SESSIONS = [
     ],
     "wisdom_codes": [
       {
+        "id": "b27f4194-4a87-423e-a672-06faeb46b861",
         "code_number": 1,
         "icon_key": "key",
         "title": "Give Them Power",
@@ -2158,6 +2435,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "5824f50f-1352-4f87-9cb5-b2d33c7da811",
         "code_number": 2,
         "icon_key": "door",
         "title": "One Honest Step",
@@ -2165,6 +2443,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "25df1a8b-a20c-47cd-82ff-2d37f319de18",
         "code_number": 3,
         "icon_key": "sun",
         "title": "Before the Next Step",
@@ -2172,6 +2451,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "ab76d5fc-2b88-4850-a3fc-2810081440ee",
         "code_number": 4,
         "icon_key": "leaf",
         "title": "Rather Than Be Separated",
@@ -2179,6 +2459,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "dc097a35-991e-4f92-a899-61c9065ef85d",
         "code_number": 5,
         "icon_key": "star",
         "title": "Changing Themselves",
@@ -2188,6 +2469,7 @@ const SESSIONS = [
     ],
     "wisdom_items": [
       {
+        "id": "3f9b001b-a33b-4532-a8f9-ccf0ea9969cc",
         "n": 1,
         "text": "Most men can stand conflict and adversity, but if you want to test someone's character, give them power.",
         "being": "Abraham Lincoln",
@@ -2195,6 +2477,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "03c73043-5ce4-4b05-a59c-ed447c2ffc3a",
         "n": 2,
         "text": "I once had the peculiar responsibility of holding together a country that seemed determined to tear itself apart.",
         "being": "Abraham Lincoln",
@@ -2202,6 +2485,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "e7447623-3d5a-4bab-ac66-4347f5e6a8b6",
         "n": 3,
         "text": "I spent a good deal of time reflecting on power. What does it do to people? What do people do with it? And it's a subject that doesn't grow simpler with distance.",
         "being": "Abraham Lincoln",
@@ -2209,6 +2493,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "633f3dd5-f0eb-43f8-922c-b4372e78b680",
         "n": 4,
         "text": "My companion tonight also spent his life grappling with the same matter, the same idea, but with a much sharper pen than I possessed.",
         "being": "Abraham Lincoln",
@@ -2216,6 +2501,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "909d622f-19fb-43ed-b641-c927368e9ae2",
         "n": 5,
         "text": "You see, Mr. Tolstoy believed that government itself is a kind of violence. I, on the other hand, found myself in a position where avoiding power entirely allowed injustice, slavery to continue unchallenged.",
         "being": "Abraham Lincoln",
@@ -2223,6 +2509,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "f0e5b6aa-5b81-4b51-828c-e65a2acc15bf",
         "n": 6,
         "text": "I suppose that is a fair description of the presidency as well.",
         "being": "Abraham Lincoln",
@@ -2230,6 +2517,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "66b4101f-63f5-4f12-9874-93e83b3b8e58",
         "n": 7,
         "text": "We are a group of people who think deeply about freedom, and this is very clear in our atmosphere, our field.",
         "being": "Abraham Lincoln",
@@ -2237,6 +2525,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "f96085ab-9933-4721-b13f-cd74b41d7e38",
         "n": 8,
         "text": "Freedom isn't merely the absence of chains. The more difficult question is: What does a free person do with their power once we wake up to our own agency?",
         "being": "Abraham Lincoln",
@@ -2244,6 +2533,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "75526033-b4f3-45af-b525-2c314d4478ed",
         "n": 9,
         "text": "I learned that people will endure a lot of hardship rather than be separated from their community.",
         "being": "Abraham Lincoln",
@@ -2251,6 +2541,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "8475d095-eeb5-4e1b-a7cb-4756a0eea2fd",
         "n": 10,
         "text": "Humans often believe we have to understand the entire path before we take the next step.",
         "being": "Abraham Lincoln",
@@ -2258,6 +2549,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "b35d8f9d-aca4-4b77-9e02-a00dc1900f86",
         "n": 11,
         "text": "Growth happens one honest step at a time.",
         "being": "Abraham Lincoln",
@@ -2265,6 +2557,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "3d431d78-87c5-491a-919b-c34033568dc3",
         "n": 12,
         "text": "Awareness works like the lantern. When you start to question your beliefs, take a look at your emotions, take responsibility for your reactions, then every time you do that the lantern lights a little bit further.",
         "being": "Abraham Lincoln",
@@ -2272,6 +2565,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "c46c8e79-3cf2-4423-875e-0b28e62648f2",
         "n": 13,
         "text": "No civilization has ever evolved all at once. It happens because individuals, people decide to take the next few steps honestly, the next 10 feet, really honestly.",
         "being": "Abraham Lincoln",
@@ -2279,6 +2573,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "5ea8bbf0-6e9b-4a94-99d7-39120bbe7cef",
         "n": 14,
         "text": "From what we can see, many of you have already begun that walk.",
         "being": "Abraham Lincoln",
@@ -2286,6 +2581,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "22d3ef4b-f9dc-4766-a8c0-f33c42407ea9",
         "n": 15,
         "text": "That is how every meaningful journey begins, and we are very pleased to have walked a few of those feet with you today.",
         "being": "Abraham Lincoln",
@@ -2293,6 +2589,7 @@ const SESSIONS = [
         "attribution": "Abraham Lincoln — in their words"
       },
       {
+        "id": "c143316f-196a-4703-8409-15242c32217a",
         "n": 16,
         "text": "Everyone thinks about changing the world, but few think about changing themselves.",
         "being": "Leo Tolstoy",
@@ -2300,6 +2597,7 @@ const SESSIONS = [
         "attribution": "Leo Tolstoy — in their words"
       },
       {
+        "id": "c9505f23-e0f8-4386-b9e8-f8ba17aeb580",
         "n": 17,
         "text": "Yes, but not always wiser.",
         "being": "Leo Tolstoy",
@@ -2307,6 +2605,7 @@ const SESSIONS = [
         "attribution": "Leo Tolstoy — in their words"
       },
       {
+        "id": "2771ea35-b473-4153-b29d-9b34b07785ac",
         "n": 18,
         "text": "In my country, a man was admired not only as a politician, a statesman, but as a very rare example of moral courage within power or inside power.",
         "being": "Leo Tolstoy",
@@ -2314,6 +2613,7 @@ const SESSIONS = [
         "attribution": "Leo Tolstoy — in their words"
       },
       {
+        "id": "2ec2451d-2bf9-4672-a5b2-b8c07d8e7e5d",
         "n": 19,
         "text": "I spent much of my life trying to understand why humans continue to organize their societies, their communities, around violence, domination and hierarchy, even when they know deep inside themselves that love and conscience are a much better guide.",
         "being": "Leo Tolstoy",
@@ -2321,6 +2621,7 @@ const SESSIONS = [
         "attribution": "Leo Tolstoy — in their words"
       },
       {
+        "id": "a8203447-57b6-44f7-af88-fc81c051fe8f",
         "n": 20,
         "text": "Yes, and that is precisely the problem or question that haunted me. If power is always corrupting and yet injustice sometimes requires resistance, then human conscience stands in a very uncomfortable position.",
         "being": "Leo Tolstoy",
@@ -2359,6 +2660,7 @@ const SESSIONS = [
     ],
     "wisdom_codes": [
       {
+        "id": "2556698d-74f8-41d0-b309-1226669a018c",
         "code_number": 1,
         "icon_key": "star",
         "title": "Someone You Haven't Met Yet",
@@ -2366,6 +2668,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "45b7f216-eb03-41ec-9bb7-1ac9798ed7af",
         "code_number": 2,
         "icon_key": "door",
         "title": "One Slightly Unreasonable Step",
@@ -2373,6 +2676,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "d68b384e-b950-4a14-9dcc-a9d8cdb7bb6a",
         "code_number": 3,
         "icon_key": "moon",
         "title": "Loved by Millions",
@@ -2380,6 +2684,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "142cc6cd-9324-4017-b044-657358feb9ae",
         "code_number": 4,
         "icon_key": "flame",
         "title": "Love from the Outside",
@@ -2387,6 +2692,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "1313f95e-f535-4b40-8f48-35fcfbee0f79",
         "code_number": 5,
         "icon_key": "wave",
         "title": "The Detour Is the Story",
@@ -2396,6 +2702,7 @@ const SESSIONS = [
     ],
     "wisdom_items": [
       {
+        "id": "bfa5f377-8318-4687-85de-f0bcf339ecea",
         "n": 1,
         "text": "We did not expect our lives to unfold the way they did, but perhaps none of you will either.",
         "being": "Robin Williams",
@@ -2403,6 +2710,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "03262b5e-41eb-4a7e-9710-6f9ee17bc614",
         "n": 2,
         "text": "You're all here having a conversation with a comedian after he's dead about living an unimaginable life. If that's not unimaginable, I don't know what is.",
         "being": "Robin Williams",
@@ -2410,6 +2718,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "818f2d6e-344e-4ff0-9b01-ebe961a14a6c",
         "n": 3,
         "text": "Comedians live for a good audience. And this is the first time I've had one that spans dimensions. That's new. I like it.",
         "being": "Robin Williams",
@@ -2417,6 +2726,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "a4e47c69-a27a-4d75-9b05-ed2a3c3a0716",
         "n": 4,
         "text": "When you're imagining your future, you're imagining it from your current self, but your life is trying to take you far beyond that current self.",
         "being": "Robin Williams",
@@ -2424,6 +2734,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "d0e81ace-0243-430d-a65a-11f5b1c2338c",
         "n": 5,
         "text": "So it has to be unimaginable because you're becoming someone you haven't met yet.",
         "being": "Robin Williams",
@@ -2431,6 +2742,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "4d688e21-cf47-4f96-b6d2-fea47ac323ba",
         "n": 6,
         "text": "Most of you think you know what you want. Security, money, stability, recognition, even spiritual success. But what you truly want is freedom and expression, authentic connection, meaning and joy.",
         "being": "Robin Williams",
@@ -2438,6 +2750,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "c3f27e57-06d4-4c3e-9840-1fdd0d385d2a",
         "n": 7,
         "text": "The unimaginable isn't random. It's beyond the boundaries of your current identity.",
         "being": "Robin Williams",
@@ -2445,6 +2758,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "79e85e4e-5c34-4307-8df4-28e3fbc57c73",
         "n": 8,
         "text": "If I had told most of you 10 years ago that you'd be doing what you're doing right now, you would say no. Or at least, well, that's ambitious.",
         "being": "Robin Williams",
@@ -2452,6 +2766,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "9a6a1b22-2cfc-4758-a2a4-0b7e9af8833e",
         "n": 9,
         "text": "The unimaginable isn't something that you have to create. It's just something that you allow to unfold when you let go of who you thought you needed to be.",
         "being": "Robin Williams",
@@ -2459,6 +2774,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "23d3d7e7-db0b-4c29-8248-6a191c0b1bf6",
         "n": 10,
         "text": "And it usually starts with one small, slightly unreasonable step.",
         "being": "Robin Williams",
@@ -2466,6 +2782,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "56d2b1fb-edbb-4594-b49e-ee25e396f811",
         "n": 11,
         "text": "My brain works like 15 squirrels on espresso trying to write Shakespeare. One of them's wearing tights.",
         "being": "Robin Williams",
@@ -2473,6 +2790,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "49c61fdb-2ce3-4690-af1c-be3ea28ce94d",
         "n": 12,
         "text": "Some people have one thought at a time. I had thoughts like a popcorn machine.",
         "being": "Robin Williams",
@@ -2480,6 +2798,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "8a0ea14b-f9a5-4e9b-bfac-cf6ddc32c3ce",
         "n": 13,
         "text": "When you're sensitive, it's like emotional wi-fi. You feel the room, send out a joke and suddenly everybody connects.",
         "being": "Robin Williams",
@@ -2487,6 +2806,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "f1fc4fbb-1c6a-44ff-b44b-7b43eac81a2d",
         "n": 14,
         "text": "He was naturally sort of quick minded. Some people just process information quickly, which is great for comedy.",
         "being": "Robin Williams",
@@ -2494,6 +2814,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Robin Williams"
       },
       {
+        "id": "9c28d2e6-23b3-4e19-8c2a-ea9c32ede4da",
         "n": 15,
         "text": "When you feel a lot, your mind learns to move quickly.",
         "being": "Robin Williams",
@@ -2501,6 +2822,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "33c81c37-4938-4da4-94e2-7634b5d6cebc",
         "n": 16,
         "text": "You all know this as you've been practicing just sitting with discomfort and understanding how quickly you distract yourself without realizing that you've even been uncomfortable.",
         "being": "Robin Williams",
@@ -2508,6 +2830,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "c9d6cea7-94cc-44d5-8262-726a23586d44",
         "n": 17,
         "text": "Sensitivity and curiosity with adaptation-that's what it is.",
         "being": "Robin Williams",
@@ -2515,6 +2838,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "96a07dfe-6035-4b1d-beb3-1abd3271f9a8",
         "n": 18,
         "text": "Being funny is a way to create space. Not necessarily avoid the moment, but to make it more breathable.",
         "being": "Robin Williams",
@@ -2522,6 +2846,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "53de1917-b7a0-46e7-947b-54de7ee1953f",
         "n": 19,
         "text": "A joke doesn't necessarily always take you away from the feeling. It helps you stay in it without being overwhelmed.",
         "being": "Robin Williams",
@@ -2529,6 +2854,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "f74fef35-4bdf-44ef-9d5b-66214eb2b2e9",
         "n": 20,
         "text": "Humor is also connection. In intense moments, a lot of people will withdraw and they get quiet, guarded. A little bit of humor will bring people back together.",
         "being": "Robin Williams",
@@ -2536,6 +2862,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "48375054-2404-4f75-b5c7-5f5df36f69ed",
         "n": 21,
         "text": "It's like opening a window in a room that's gotten too warm and stuffy.",
         "being": "Robin Williams",
@@ -2543,6 +2870,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "1a5d0ffd-c6d3-4a7c-b84f-df5d05f59ee5",
         "n": 22,
         "text": "Most of us are sensitive, we do this naturally.",
         "being": "Robin Williams",
@@ -2550,6 +2878,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "b3ef18b8-991f-417c-bf97-7753c483e94b",
         "n": 23,
         "text": "As grueling as performing a standup show in front of a live audience, it was just necessary for him. That was the connection.",
         "being": "Robin Williams",
@@ -2557,6 +2886,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "f0fd7dbe-5516-4624-8c9c-26ff3a8a466e",
         "n": 24,
         "text": "You don't feel that in a movie, a TV show, or an interview. You don't get that response.",
         "being": "Robin Williams",
@@ -2564,6 +2894,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "c68bb0a6-6039-4356-b720-663e86165775",
         "n": 25,
         "text": "What makes something funny is surprise. Set up expectation, then left turn right.",
         "being": "Robin Williams",
@@ -2571,6 +2902,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "0cb2095d-17b6-4c2b-bdbb-1587bf5c2563",
         "n": 26,
         "text": "You always think I'm going one way, and then suddenly I'm talking about a penguin running in a yoga class. And because your brain goes, wait, that doesn't belong there.",
         "being": "Robin Williams",
@@ -2578,6 +2910,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "17efe790-2623-4b42-b4cf-021c85a4439c",
         "n": 27,
         "text": "That little moment of confusion is what turns into laughter.",
         "being": "Robin Williams",
@@ -2585,6 +2918,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "25f1dfe3-ba5f-4419-be5c-e71c85b88ae3",
         "n": 28,
         "text": "The other thing that's funny is the truth, but seen from a different angle.",
         "being": "Robin Williams",
@@ -2592,6 +2926,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "07900251-47ca-49e1-bedd-abacd22df776",
         "n": 29,
         "text": "It comes from surprise, from truth, from contrast, timing and humanity.",
         "being": "Robin Williams",
@@ -2599,6 +2934,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "6f10b4b3-8687-45b8-9b02-8ef32f413d9a",
         "n": 30,
         "text": "Don't wait until life makes sense to enjoy it, because, spoiler alert, it rarely does.",
         "being": "Robin Williams",
@@ -2606,6 +2942,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "354bbb65-8a5b-4bb3-b62f-2b7b8e9635a1",
         "n": 31,
         "text": "The beautiful thing about improvisation is you can't actually make a mistake, but if you perceive you do, just remember, they eventually become material-your mistakes.",
         "being": "Robin Williams",
@@ -2613,6 +2950,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "a52270ae-1d47-4810-b51b-eb8d268ebce8",
         "n": 32,
         "text": "He felt appreciation and warmth from audiences and connection only when he was performing, really. And that was very real to him, that connection when he was on a stage but alone, he almost never carried that feeling.",
         "being": "Robin Williams",
@@ -2620,6 +2958,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Robin Williams"
       },
       {
+        "id": "6099a19d-6daa-470e-8ab2-0559aa42208d",
         "n": 33,
         "text": "Once it was over, it was over and gone. The connection was just absent. And that was a great drop.",
         "being": "Robin Williams",
@@ -2627,6 +2966,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "503f103e-9472-48cc-8d0a-56f458587ea5",
         "n": 34,
         "text": "You can be loved by millions of people and still be unable to love yourself.",
         "being": "Robin Williams",
@@ -2634,6 +2974,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "35709086-d855-4fa8-8794-bc51d60e807f",
         "n": 35,
         "text": "When people love what you do, it is not the same as them loving you.",
         "being": "Robin Williams",
@@ -2641,6 +2982,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "b2176af5-e993-4666-be61-d571a06d1521",
         "n": 36,
         "text": "I felt appreciation. I felt warmth from audiences and connection only when I was performing, really.",
         "being": "Robin Williams",
@@ -2648,6 +2990,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "6f405aef-5e45-4c36-97b0-ddccb760808c",
         "n": 37,
         "text": "Quickness was how I got faster and faster to manage the intensity of how I felt.",
         "being": "Robin Williams",
@@ -2655,6 +2998,7 @@ const SESSIONS = [
         "attribution": "Robin Williams — in their words"
       },
       {
+        "id": "28d3c545-2558-4388-b19d-7091166b84b8",
         "n": 39,
         "text": "She feels a lot of warmth from all of us. There's something sincere about the group willingness to explore life beyond expectations. And that's a big, beautiful thing.",
         "being": "Princess Diana",
@@ -2662,6 +3006,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "9bb0fab7-df35-4ef4-8c03-6edd4ac99194",
         "n": 40,
         "text": "Sometimes the unimaginable isn't just the dream. It's the detour. And the detour ends up being the story.",
         "being": "Princess Diana",
@@ -2669,6 +3014,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "ff2257da-2fd7-4c81-b65e-1040424f78e5",
         "n": 41,
         "text": "She imagined in life was like a life of belonging, of love and belonging. And she actually thought she would find that in traditional life, you know, marriage and family.",
         "being": "Princess Diana",
@@ -2676,6 +3022,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "803e021a-fed0-4916-b7c0-8143f53f0281",
         "n": 42,
         "text": "But what she really wanted was just connection. And she discovered that in ways she could never have imagined.",
         "being": "Princess Diana",
@@ -2683,6 +3030,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "b0ff96a4-15df-45fb-95ad-d091d4bfdb95",
         "n": 43,
         "text": "The life I imagine was so much smaller than the life that unfolded.",
         "being": "Princess Diana",
@@ -2690,6 +3038,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "e553116d-c45d-443e-9ee6-bf5256d11823",
         "n": 44,
         "text": "And that is true for most of you. You're being invited into lives that your current self can't comprehend. And it's not because you're incapable. It's because you're expanding.",
         "being": "Princess Diana",
@@ -2697,6 +3046,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "ef863969-f41e-4715-817c-28fcc29fc4ef",
         "n": 45,
         "text": "An unimaginable life is not one that's chaotic. It's one that's larger than your current expectations of yourself.",
         "being": "Princess Diana",
@@ -2704,6 +3054,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "e4280575-d209-44c3-b1a0-faa0481ef4d3",
         "n": 46,
         "text": "She experienced a lot of warmth from people. When she met individuals face to face and held hands with them or spoke with them, she actually felt genuine connection with them.",
         "being": "Princess Diana",
@@ -2711,6 +3062,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "c12e5969-0a0c-4f6b-98b7-87841b1b4b96",
         "n": 47,
         "text": "And those moments were very meaningful to her. They meant a lot. But most of the time she felt quite alone because public love is very distant.",
         "being": "Princess Diana",
@@ -2718,6 +3070,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "65dbd163-32a4-4a66-992e-7fff39146d39",
         "n": 48,
         "text": "It's beautiful, but it is in no way, shape or form the same as close personal connection and understanding.",
         "being": "Princess Diana",
@@ -2725,6 +3078,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "e0997fdb-acc5-4882-8e88-8eafe82ad797",
         "n": 49,
         "text": "She had so much self doubt. Never felt like she was doing enough or ever felt like she truly belonged.",
         "being": "Princess Diana",
@@ -2732,6 +3086,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "94ea62c3-2e7d-4dab-a948-dbbb2224dc33",
         "n": 50,
         "text": "The interest in her, the constant interest in her-it wasn't love. It was more obsession and fantasy. Right. Fandom.",
         "being": "Princess Diana",
@@ -2739,6 +3094,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "dd8f96af-3b80-4a58-a79a-ff168804a475",
         "n": 51,
         "text": "She didn't feel the extent of it at all, like in her life.",
         "being": "Princess Diana",
@@ -2746,6 +3102,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "de02e0e4-5d75-41c5-9562-040aeedf215a",
         "n": 52,
         "text": "Love from the outside never feels the same as love on the inside.",
         "being": "Princess Diana",
@@ -2753,6 +3110,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "995a97e3-6964-4d76-b9eb-b04f27d48076",
         "n": 53,
         "text": "She was sensitive but not that smart (in the academic sense).",
         "being": "Princess Diana",
@@ -2760,6 +3118,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "74a77428-7c93-4fc4-9bec-0bfdba1f57ef",
         "n": 54,
         "text": "Sensitivity was a very central part of her experience. She was also quite empathic too. So she felt things very deeply.",
         "being": "Princess Diana",
@@ -2767,6 +3126,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "34774929-e366-4df8-9347-1fc0c4c3d826",
         "n": 55,
         "text": "She felt emotions of other people just entering a room.",
         "being": "Princess Diana",
@@ -2774,6 +3134,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "f9ddfb7e-a27f-443c-a65a-b76474e0086e",
         "n": 56,
         "text": "The public life, the scrutiny, expectations, those things were very, very overwhelming for her.",
         "being": "Princess Diana",
@@ -2781,6 +3142,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "4437d622-614d-4979-906a-51dc31e71ac6",
         "n": 57,
         "text": "She didn't understand her sensitivity at all when she was alive. But in fact she thought it was weakness or vulnerability in life.",
         "being": "Princess Diana",
@@ -2788,6 +3150,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "4c1d9ffb-0994-44eb-a2b4-b6a6839d05b4",
         "n": 58,
         "text": "Now, from her perspective now it allowed her, her compassion to really naturally flow. And that was a big part of her life.",
         "being": "Princess Diana",
@@ -2795,6 +3158,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "96f95f05-bd11-401e-bfd0-2a6b80677e44",
         "n": 59,
         "text": "Her vibration didn't force her life to unfold, but it did resonate and attract certain experiences.",
         "being": "Princess Diana",
@@ -2802,6 +3166,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "ec7f7e8e-9583-4f3b-b047-6679954d7b75",
         "n": 60,
         "text": "Because of her sensitivity, she was more affected by pressure and expectations, loneliness.",
         "being": "Princess Diana",
@@ -2809,6 +3174,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "a6629ad6-c59f-492d-8596-84f4fdf84a74",
         "n": 61,
         "text": "It's all a perfect setup. Before coming into the life, there was an agreement on her sensitivity and her environment.",
         "being": "Princess Diana",
@@ -2816,6 +3182,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "e65bf1f9-cdf7-40b9-a528-08ae78fee9c2",
         "n": 62,
         "text": "Her sensitive nature was really meaningful and actually public experiences. But that was all to lead to compassion, which was her one of her big pre-birth intentions.",
         "being": "Princess Diana",
@@ -2823,6 +3190,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "51e49495-8e0a-4268-a21a-69ff259c49d2",
         "n": 63,
         "text": "She was drawn to intuition, magic, healing and healing work. She did trust her instincts and she was very curious about the deeper aspects.",
         "being": "Princess Diana",
@@ -2830,6 +3198,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "d79c8eac-3b7c-4565-9e27-d0a6f31718b9",
         "n": 64,
         "text": "She felt that compassion for one individual, two individuals and then the masses was an expression of spirituality.",
         "being": "Princess Diana",
@@ -2837,6 +3206,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "c76c0526-6255-4bcd-bbf4-c17fbd657278",
         "n": 65,
         "text": "She feels a lot of warmth from all of you. There's something sincere about the group willingness to explore life beyond expectations.",
         "being": "Princess Diana",
@@ -2844,6 +3214,7 @@ const SESSIONS = [
         "attribution": "Paraphrased from Princess Diana"
       },
       {
+        "id": "9293e5b8-5065-4a21-824b-043b84fc89bf",
         "n": 66,
         "text": "Be gentle with yourselves as you step into the unimaginable. Learning to trust what you can't see takes a lot of courage.",
         "being": "Princess Diana",
@@ -2851,6 +3222,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "2ea1941c-3f60-4f16-a7ef-dc363a43a9b4",
         "n": 67,
         "text": "You often don't feel confident, ready, certain. But the fact that you're willing to continue to care and to grow is what's meaningful and what makes you who you are.",
         "being": "Princess Diana",
@@ -2858,6 +3230,7 @@ const SESSIONS = [
         "attribution": "Princess Diana — in their words"
       },
       {
+        "id": "8a7e5a8e-b914-4505-8e05-1c2caf8aa1bc",
         "n": 68,
         "text": "Your kindness matters more than you realize. The way you listen to each other, support each other, and open your hearts-those things ripple out in ways you can't see.",
         "being": "Princess Diana",
@@ -3027,9 +3400,9 @@ let deckKind = "code";
    on screen, so one view renders both. */
 function normalise(x, kind){
   return kind === "code"
-    ? { n:x.code_number, icon:x.icon_key, title:x.title,
+    ? { id:x.id, n:x.code_number, icon:x.icon_key, title:x.title,
         quote:x.quote, attribution:x.attribution }
-    : { n:x.n, icon:null, title:null,
+    : { id:x.id, n:x.n, icon:null, title:null,
         quote:x.text, attribution:x.attribution };
 }
 
@@ -3057,6 +3430,7 @@ function openWisdom(i){
 
   renderPager();
   $("#wc-link").classList.remove("show");
+  paintKeepState();
   $$(".wc-actions .iconbtn").forEach(b=>b.classList.remove("on"));
   const card = $("#wc-card");
   card.style.animation = "none"; void card.offsetWidth; card.style.animation = "";
@@ -3142,7 +3516,9 @@ $("#flip-stage").addEventListener("click", e => {
 });
 $("#reveal-btn").addEventListener("click", () => flipCard());
 
-$$("[data-toggle]").forEach(b=>b.addEventListener("click",()=>{
+/* the card-level love/save are still cosmetic; the wisdom-code ones
+   are handled by the account layer below and are excluded here */
+$$('[data-toggle]:not([data-toggle^="wc-"])').forEach(b=>b.addEventListener("click",()=>{
   b.classList.toggle("on");
   const on = b.classList.contains("on");
   const kind = b.dataset.toggle.includes("love") ? "Loved" : "Saved";
@@ -3225,8 +3601,198 @@ $$(".tab").forEach(t=>t.addEventListener("click",()=>{
   t.classList.add("active");
   if(t.dataset.tab==="home") show("home");
   else if(t.dataset.tab==="library"){ renderLibrary(); show("library"); }
+  else if(t.dataset.tab==="reflect"){ renderMine(); show("mine"); }
   else toast(`${t.textContent.trim()} — not in this preview`);
 }));
+
+/* ---------- accounts ----------
+   The key below is the project's PUBLISHABLE key. It is meant to be
+   visible here. What actually protects people's data is row-level
+   security in the database: every reaction and bookmark is readable
+   and writable only by the person whose user_id matches. */
+const SB_URL = "https://bnkwbuiqziikqxftqhtv.supabase.co";
+const SB_KEY = "sb_publishable_hsWz42RCvwdo-N5aPkJh5A_FIEtVjkm";
+
+let db = null, me = null;
+let mine = { loved:new Set(), saved:new Set() };
+let mineTab = "loved";
+let pendingAction = null;   // what they clicked before signing in
+
+function authReady(){
+  if(db) return true;
+  if(!window.supabase || !SB_URL.startsWith("http")) return false;
+  db = window.supabase.createClient(SB_URL, SB_KEY);
+  return true;
+}
+
+function openAuth(){ $("#auth-sheet").classList.add("show"); }
+function closeAuth(){ $("#auth-sheet").classList.remove("show"); }
+
+$("#auth-close").addEventListener("click", ()=>{ pendingAction=null; closeAuth(); });
+$("#auth-sheet").addEventListener("click", e=>{
+  if(e.target.id === "auth-sheet"){ pendingAction=null; closeAuth(); }
+});
+
+$("#auth-form").addEventListener("submit", async e=>{
+  e.preventDefault();
+  if(!authReady()){ toast("Sign-in is unavailable right now"); return; }
+  const email = $("#auth-email").value.trim();
+  if(!email) return;
+  $("#auth-send").disabled = true;
+  $("#auth-send").textContent = "Sending…";
+  const { error } = await db.auth.signInWithOtp({
+    email, options:{ emailRedirectTo: location.origin + location.pathname }
+  });
+  $("#auth-send").disabled = false;
+  $("#auth-send").textContent = "Email me a link";
+  if(error){ toast(error.message || "Could not send the link"); return; }
+  $("#auth-title").textContent = "Check your email";
+  $("#auth-copy").textContent =
+    "We sent a link to " + email + ". Open it on this device and you will be signed in.";
+  $("#auth-form").style.display = "none";
+  $("#auth-close").textContent = "Close";
+});
+
+/* what the user keeps */
+async function loadMine(){
+  if(!me){ mine = { loved:new Set(), saved:new Set() }; return; }
+  const [r, b] = await Promise.all([
+    db.from("reactions").select("target_id,target_type,reaction"),
+    db.from("bookmarks").select("target_id,target_type")
+  ]);
+  mine.loved = new Set((r.data||[]).filter(x=>x.reaction==="love").map(x=>x.target_id));
+  mine.saved = new Set((b.data||[]).map(x=>x.target_id));
+}
+
+function currentTarget(){
+  const w = deck[wcIndex];
+  if(!w || !w.id) return null;
+  return { id:w.id, type: deckKind === "code" ? "wisdom_code" : "wisdom_item" };
+}
+
+function paintKeepState(){
+  const t = currentTarget();
+  const love = $('[data-toggle="wc-love"]'), save = $('[data-toggle="wc-save"]');
+  if(!love || !save) return;
+  love.classList.toggle("on", !!(t && mine.loved.has(t.id)));
+  save.classList.toggle("on", !!(t && mine.saved.has(t.id)));
+}
+
+async function toggleKeep(kind){
+  const t = currentTarget();
+  if(!t) return;
+  if(!me){ pendingAction = kind; openAuth(); return; }
+  const on = kind === "love" ? mine.loved.has(t.id) : mine.saved.has(t.id);
+  const table = kind === "love" ? "reactions" : "bookmarks";
+  const set = kind === "love" ? mine.loved : mine.saved;
+
+  if(on){
+    let q = db.from(table).delete()
+      .eq("user_id", me.id).eq("target_id", t.id).eq("target_type", t.type);
+    if(kind === "love") q = q.eq("reaction","love");
+    const { error } = await q;
+    if(error){ toast("Could not remove that"); return; }
+    set.delete(t.id);
+    toast(kind === "love" ? "Love removed" : "Removed from saved");
+  } else {
+    const row = { user_id: me.id, target_id: t.id, target_type: t.type };
+    if(kind === "love") row.reaction = "love";
+    const { error } = await db.from(table).insert(row);
+    if(error){ toast("Could not save that"); return; }
+    set.add(t.id);
+    toast(kind === "love" ? "Loved" : "Saved");
+  }
+  paintKeepState();
+}
+
+/* the collection, grouped by the card each code came from */
+function everything(){
+  const out = [];
+  SESSIONS.forEach(s=>{
+    s.wisdom_codes.forEach(c=>out.push({
+      id:c.id, kind:"code", session:s, title:c.title,
+      quote:c.quote, attribution:c.attribution, n:c.code_number }));
+    s.wisdom_items.forEach(w=>out.push({
+      id:w.id, kind:"item", session:s, title:null,
+      quote:w.text, attribution:w.attribution, n:w.n }));
+  });
+  return out;
+}
+
+function renderMine(){
+  const set = mineTab === "loved" ? mine.loved : mine.saved;
+  $("#mine-title").textContent = mineTab === "loved" ? "Loved" : "Saved";
+  $$("[data-mine]").forEach(b=>b.classList.toggle("on", b.dataset.mine === mineTab));
+
+  if(!me){
+    $("#mine-sub").textContent = "";
+    $("#mine-list").innerHTML =
+      `<div class="mine-empty">Sign in and whatever you keep will gather here,
+        grouped by the session it came from.
+        <br><br><button class="primary" style="max-width:220px;margin:0 auto"
+          id="mine-signin">Sign in</button></div>`;
+    $("#mine-signin").addEventListener("click", openAuth);
+    return;
+  }
+
+  const kept = everything().filter(x=>set.has(x.id));
+  $("#mine-sub").textContent = kept.length
+    ? `${kept.length} ${kept.length===1?"code":"codes"} across ${new Set(kept.map(k=>k.session.session_number)).size} sessions`
+    : "";
+  if(!kept.length){
+    $("#mine-list").innerHTML =
+      `<div class="mine-empty">Nothing here yet. Open a code and tap the
+        ${mineTab === "loved" ? "heart" : "bookmark"} to keep it.</div>`;
+    return;
+  }
+
+  let html = "", sess = null;
+  kept.sort((a,b)=> a.session.session_number - b.session.session_number || a.n - b.n);
+  kept.forEach(k=>{
+    if(k.session.session_number !== sess){
+      sess = k.session.session_number;
+      html += `<div class="voice-head"><span class="line"></span>
+                 <span>${tileLabel(k.session.title)}</span><span class="line"></span></div>`;
+    }
+    html += `<button class="passage" data-keep="${k.session.session_number}|${k.kind}|${k.n}">
+        <p class="q">${k.title ? "<strong>"+k.title+"</strong><br>" : ""}${k.quote}</p>
+        <p class="a">${k.attribution}</p>
+      </button>`;
+  });
+  $("#mine-list").innerHTML = html;
+  $$("[data-keep]").forEach(b=>b.addEventListener("click",()=>{
+    const [sn, kind, n] = b.dataset.keep.split("|");
+    selectSession(+sn);
+    const list = kind === "code" ? session.wisdom_codes : session.wisdom_items;
+    const i = list.findIndex(x=>(kind === "code" ? x.code_number : x.n) === +n);
+    if(i >= 0) openDeck(kind === "code" ? "code" : "item", i);
+  }));
+}
+
+$$("[data-mine]").forEach(b=>b.addEventListener("click",()=>{
+  mineTab = b.dataset.mine; renderMine();
+}));
+
+/* keep the buttons wired to the account layer */
+$('[data-toggle="wc-love"]').addEventListener("click", ()=>toggleKeep("love"));
+$('[data-toggle="wc-save"]').addEventListener("click", ()=>toggleKeep("save"));
+
+async function refreshAccount(){
+  if(!authReady()) return;
+  const { data } = await db.auth.getSession();
+  me = data && data.session ? data.session.user : null;
+  await loadMine();
+  paintKeepState();
+  renderMine();
+  if(me){
+    closeAuth();
+    if(pendingAction){ const a = pendingAction; pendingAction = null; toggleKeep(a); }
+  }
+}
+
+if(authReady()){
+  db.auth.onAuthStateChange(()=>{ refreshAccount(); });
+}
 
 /* ---------- open a shared link, if this is one ---------- */
 function openFromLink(){
@@ -3259,6 +3825,7 @@ renderHome();
 renderCard();
 renderSession();
 openFromLink();
+refreshAccount();
 </script>
 </body>
 </html>
