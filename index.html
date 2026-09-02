@@ -378,6 +378,44 @@ body{
 .mine-tabs button.on{
   background:rgba(212,169,78,.14);border-color:var(--gold);color:var(--parchment);
 }
+/* ---------- the profile circle ---------- */
+.avatar-btn{
+  position:absolute;top:6px;right:18px;z-index:40;
+  width:30px;height:30px;border-radius:50%;cursor:pointer;padding:0;
+  border:1px solid rgba(212,169,78,.55);
+  background:rgba(11,18,41,.75);color:var(--parchment);
+  font-family:var(--body);font-size:11px;font-weight:500;letter-spacing:.04em;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.avatar-btn:hover{border-color:var(--gold-bright);transform:scale(1.06)}
+.avatar-btn.guest{opacity:.55}
+.avatar-btn img{width:100%;height:100%;object-fit:cover}
+
+.sheet textarea{
+  width:100%;padding:12px 14px;border-radius:7px;min-height:84px;resize:vertical;
+  background:rgba(8,14,34,.6);border:1px solid rgba(212,169,78,.3);
+  color:var(--parchment);font-family:var(--body);font-size:13px;
+  line-height:1.5;margin-bottom:6px;
+}
+.sheet textarea:focus{outline:none;border-color:var(--gold)}
+.sheet label{
+  display:block;font-family:var(--body);font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold);margin:0 0 6px;font-weight:400;
+}
+.sheet .counter{
+  text-align:right;font-size:10.5px;color:rgba(239,223,192,.4);margin:0 0 14px;
+}
+.sheet .who{
+  text-align:center;font-size:11.5px;color:rgba(239,223,192,.5);
+  margin:0 0 18px;word-break:break-all;
+}
+.sheet .danger{
+  width:100%;margin-top:10px;padding:11px;border-radius:7px;cursor:pointer;
+  background:none;border:1px solid rgba(212,169,78,.28);
+  color:rgba(239,223,192,.7);font-family:var(--body);font-size:12.5px;
+}
+.sheet .danger:hover{border-color:var(--rose);color:var(--rose)}
 .mine-empty{
   text-align:center;padding:34px 20px;font-size:13px;font-weight:300;
   color:rgba(239,223,192,.5);line-height:1.6;
@@ -651,6 +689,7 @@ body{
     </span>
   </div>
 
+  <button class="avatar-btn guest" id="avatar-btn" aria-label="Your profile">·</button>
   <div class="screen">
 
     <!-- ============ HOME ============ -->
@@ -722,7 +761,7 @@ body{
 
                     <div class="meta">
                       <span id="s-number"></span>
-                      <span class="sep">✦</span>
+                      <span class="sep" id="s-sep" hidden>✦</span>
                       <span id="s-date"></span>
                     </div>
                     <div class="beings-line" id="s-beings"></div>
@@ -841,6 +880,26 @@ body{
       <div class="spread" id="spread"></div>
     </section>
 
+  </div>
+
+  <!-- ==== PROFILE ============ -->
+  <div class="sheet" id="profile-sheet">
+    <div class="sheet-inner">
+      <h3>Your profile</h3>
+      <p class="who" id="profile-who"></p>
+
+      <label for="profile-name">Name</label>
+      <input type="text" id="profile-name" maxlength="60" placeholder="What shall we call you?">
+
+      <label for="profile-about">A little about you</label>
+      <textarea id="profile-about" maxlength="280"
+                placeholder="Anything you would like others to know."></textarea>
+      <p class="counter"><span id="about-count">0</span>/280 · this is public</p>
+
+      <button class="primary" id="profile-save">Save</button>
+      <button class="danger" id="profile-signout">Sign out</button>
+      <button class="ghost" id="profile-close">Close</button>
+    </div>
   </div>
 
   <!-- ==== SIGN IN ============ -->
@@ -3337,11 +3396,11 @@ function renderHome(){
 }
 
 function renderCard(){
-  $("#card-eyebrow").textContent = `Dead Talks · Session ${pad(session.session_number)}`;
+  $("#card-eyebrow").textContent = prettyDate(session.session_date);
   $("#card-title").textContent = session.title;
   $("#card-beings").innerHTML = session.show_beings
     ? session.beings.map(b=>b.name).join('<span class="x">\u2715</span>') : "";
-  $("#card-eyebrow").title = "sessions.session_number";
+  $("#card-eyebrow").title = "sessions.session_date";
 }
 
 const XP = [
@@ -3355,7 +3414,7 @@ const XP = [
 
 function renderSession(){
   $("#s-title").textContent      = session.title;
-  $("#s-number").textContent     = `Session ${pad(session.session_number)}`;
+  $("#s-number").textContent     = "";   // the date carries this now
   $("#s-date").textContent       = prettyDate(session.session_date);
   $("#s-standfirst").textContent = session.standfirst;
   $("#s-beings").innerHTML       = session.show_beings
@@ -3468,7 +3527,7 @@ function renderPager(){
 function renderReading(){
   $("#reading-title").textContent = tileLabel(session.title);
   $("#reading-sub").textContent =
-    `Every passage from session ${pad(session.session_number)} — ${session.wisdom_items.length} in all`;
+    `Every passage from ${prettyDate(session.session_date)} — ${session.wisdom_items.length} in all`;
 
   let html = "", voice = null;
   session.wisdom_items.forEach((w,i)=>{
@@ -3586,7 +3645,7 @@ function renderLibrary(){
       <span class="sc-art" style="background-image:url('${s.artwork_path}')"></span>
       <span class="sc-frame"></span>
       <span class="sc-label">
-        <span class="sc-num">Session ${pad(s.session_number)}</span>
+        <span class="sc-num">${prettyDate(s.session_date)}</span>
         ${tileLabel(s.title)}
       </span>
     </button>`).join("");
@@ -3625,7 +3684,10 @@ function authReady(){
   return true;
 }
 
-function openAuth(){ $("#auth-sheet").classList.add("show"); }
+function openAuth(){
+  $("#profile-sheet").classList.remove("show");   // only one sheet at a time
+  $("#auth-sheet").classList.add("show");
+}
 function closeAuth(){ $("#auth-sheet").classList.remove("show"); }
 
 $("#auth-close").addEventListener("click", ()=>{ pendingAction=null; closeAuth(); });
@@ -3777,10 +3839,90 @@ $$("[data-mine]").forEach(b=>b.addEventListener("click",()=>{
 $('[data-toggle="wc-love"]').addEventListener("click", ()=>toggleKeep("love"));
 $('[data-toggle="wc-save"]').addEventListener("click", ()=>toggleKeep("save"));
 
+/* ---------- the profile circle ----------
+   Signed out it is a faint dot that opens sign-in. Signed in it shows
+   the person's picture, or their initials if they have none. This is
+   also the only place the page says "you are signed in", which is why
+   the emailed link previously seemed to do nothing. */
+let myProfile = null;
+
+function initials(name){
+  const parts = (name||"").trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return "·";
+  return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+}
+
+function paintAvatar(){
+  const b = $("#avatar-btn");
+  if(!me){
+    b.classList.add("guest");
+    b.innerHTML = "·";
+    b.setAttribute("aria-label", "Sign in");
+    return;
+  }
+  b.classList.remove("guest");
+  const name = (myProfile && myProfile.display_name) || (me.email||"").split("@")[0];
+  const pic  = myProfile && myProfile.avatar_path;
+  b.innerHTML = pic ? `<img src="${pic}" alt="">` : initials(name);
+  b.setAttribute("aria-label", "Your profile, " + name);
+}
+
+async function loadProfile(){
+  myProfile = null;
+  if(!me) return;
+  const { data } = await db.from("profiles")
+    .select("display_name,avatar_path,about").eq("id", me.id).maybeSingle();
+  myProfile = data || null;
+}
+
+function openProfile(){
+  if(!me){ openAuth(); return; }
+  closeAuth();
+  $("#profile-who").textContent = me.email || "";
+  $("#profile-name").value  = (myProfile && myProfile.display_name) || "";
+  $("#profile-about").value = (myProfile && myProfile.about) || "";
+  $("#about-count").textContent = $("#profile-about").value.length;
+  $("#profile-sheet").classList.add("show");
+}
+function closeProfile(){ $("#profile-sheet").classList.remove("show"); }
+
+$("#avatar-btn").addEventListener("click", openProfile);
+$("#profile-close").addEventListener("click", closeProfile);
+$("#profile-sheet").addEventListener("click", e=>{
+  if(e.target.id === "profile-sheet") closeProfile();
+});
+$("#profile-about").addEventListener("input", e=>{
+  $("#about-count").textContent = e.target.value.length;
+});
+
+$("#profile-save").addEventListener("click", async ()=>{
+  if(!me) return;
+  const btn = $("#profile-save");
+  btn.disabled = true; btn.textContent = "Saving…";
+  const { error } = await db.from("profiles").update({
+    display_name: $("#profile-name").value.trim() || null,
+    about: $("#profile-about").value.trim() || null
+  }).eq("id", me.id);
+  btn.disabled = false; btn.textContent = "Save";
+  if(error){ toast("Could not save that"); return; }
+  await loadProfile();
+  paintAvatar();
+  closeProfile();
+  toast("Profile saved");
+});
+
+$("#profile-signout").addEventListener("click", async ()=>{
+  await db.auth.signOut();
+  closeProfile();
+  toast("Signed out");
+});
+
 async function refreshAccount(){
   if(!authReady()) return;
   const { data } = await db.auth.getSession();
   me = data && data.session ? data.session.user : null;
+  await loadProfile();
+  paintAvatar();
   await loadMine();
   paintKeepState();
   renderMine();
@@ -3825,6 +3967,7 @@ renderHome();
 renderCard();
 renderSession();
 openFromLink();
+paintAvatar();
 refreshAccount();
 </script>
 </body>
