@@ -433,6 +433,31 @@ body{
 .avatar-pick .choose:hover{border-color:var(--gold)}
 
 /* a reflection lives on the parchment, so it takes ink colours */
+/* a quiet count when a session has more than one song */
+.xp{position:relative}
+.xp .count{
+  position:absolute;top:7px;right:9px;min-width:15px;height:15px;
+  border-radius:8px;padding:0 4px;
+  background:rgba(212,169,78,.9);color:#0B1229;
+  font-family:var(--body);font-size:9.5px;font-weight:500;line-height:15px;
+  text-align:center;letter-spacing:0;
+}
+.xp:disabled .count{display:none}
+
+/* the song list borrows the Wisdom Code row, so nothing new is invented */
+.song-row{
+  display:flex;align-items:center;gap:12px;width:100%;
+  background:linear-gradient(150deg,#111B3A,#0B1229);
+  border:1px solid rgba(212,169,78,.34);border-radius:8px;
+  padding:13px 14px;margin-bottom:9px;cursor:pointer;text-align:left;
+}
+.song-row:hover{border-color:var(--gold)}
+.song-row .ico{color:var(--gold);display:flex}
+.song-row .name{
+  flex:1;font-family:var(--display);font-size:15px;color:var(--parchment);
+}
+.song-row .chev{color:rgba(239,223,192,.45);display:flex}
+
 /* ---------- the listening player ---------- */
 .play-sheet .sheet-inner{padding-bottom:26px}
 .play-head{display:flex;gap:14px;align-items:center;margin:0 0 20px}
@@ -981,6 +1006,16 @@ body{
 
   </div>
 
+  <!-- ==== SONGS ============ -->
+  <div class="sheet" id="song-sheet">
+    <div class="sheet-inner">
+      <h3>Songs from this session</h3>
+      <p id="song-sub"></p>
+      <div id="song-list"></div>
+      <button class="ghost" id="song-close">Close</button>
+    </div>
+  </div>
+
   <!-- ==== LISTENING ============ -->
   <audio id="player" preload="none"></audio>
 
@@ -1149,12 +1184,23 @@ const SESSIONS = [
     "channelled_by": "Christy Levy",
     "publication_status": "unpublished",
     "listen_path": null,
-    "journey_path": null,
+    "journey_path": "https://bnkwbuiqziikqxftqhtv.supabase.co/storage/v1/object/public/session-audio/session-001-journey.mp3",
     "song_path": null,
     "podcast_url": "https://podcasts.apple.com/ca/podcast/the-art-of-intimacy-with-rumi-and-anais-nin/id1707752987?i=1000724265926",
     "podcast_audio_url": "https://mcdn.podbean.com/mf/web/5cxagp5at9xdvwsc/DT_Rumi_Nin_podcast7rsbp.mp3",
     "podcast_seconds": 2944,
-    "spotify_url": "https://open.spotify.com/album/3D8gAqRib5xQkfgmKO8ubf",
+    "songs": [
+      {
+        "title": "What You Seek Is Seeking You",
+        "url": "https://open.spotify.com/album/3D8gAqRib5xQkfgmKO8ubf",
+        "audio": null
+      },
+      {
+        "title": "Into Me You See",
+        "url": "https://open.spotify.com/album/236P1sgqrnpNSBm0h2Ym3s",
+        "audio": null
+      }
+    ],
     "artwork_path": "covers/session-001.jpg",
     "artwork_alt": "Rumi and Anaïs Nin, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -2255,7 +2301,7 @@ const SESSIONS = [
     "podcast_url": "https://podcasts.apple.com/ca/podcast/paradox-alan-watts-frida-kahlo/id1707752987?i=1000726909898",
     "podcast_audio_url": "https://mcdn.podbean.com/mf/web/bsp2fgmc2zcsm4rd/DT_Alam_Watts_Frida_Kahlo_podcastbnl49.mp3",
     "podcast_seconds": 2803,
-    "spotify_url": null,
+    "songs": [],
     "artwork_path": "covers/session-002.jpg",
     "artwork_alt": "Alan Watts and Frida Kahlo, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -2647,12 +2693,18 @@ const SESSIONS = [
     "channelled_by": "Christy Levy",
     "publication_status": "unpublished",
     "listen_path": null,
-    "journey_path": null,
+    "journey_path": "https://bnkwbuiqziikqxftqhtv.supabase.co/storage/v1/object/public/session-audio/session-003-journey.mp3",
     "song_path": null,
     "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-abraham-lincoln-and-leo-tolstoy/id1707752987?i=1000755413132",
     "podcast_audio_url": "https://mcdn.podbean.com/mf/web/4w472ddr8qgymnuj/DY_Lincoln_Tolstoy_Podcast6sa0u.mp3",
     "podcast_seconds": 3447,
-    "spotify_url": "https://open.spotify.com/album/6lpS2iZx9o4GQJ3QM3Bpzd",
+    "songs": [
+      {
+        "title": "The Next Step",
+        "url": "https://open.spotify.com/album/6lpS2iZx9o4GQJ3QM3Bpzd",
+        "audio": null
+      }
+    ],
     "artwork_path": "covers/session-003.jpg",
     "artwork_alt": "Abraham Lincoln and Leo Tolstoy, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -2884,12 +2936,18 @@ const SESSIONS = [
     "channelled_by": "Christy Levy",
     "publication_status": "unpublished",
     "listen_path": null,
-    "journey_path": null,
+    "journey_path": "https://bnkwbuiqziikqxftqhtv.supabase.co/storage/v1/object/public/session-audio/session-004-journey.mp3",
     "song_path": null,
     "podcast_url": "https://podcasts.apple.com/ca/podcast/princess-diana-and-robin-williams-how-to-live/id1707752987?i=1000761980231",
     "podcast_audio_url": "https://mcdn.podbean.com/mf/web/vhvhy9ke4cy8rvvh/AUL_DT_Robin_Diana_Podcast6bs2r.mp3",
     "podcast_seconds": 2903,
-    "spotify_url": "https://open.spotify.com/album/3L9zkEUbMTIjwzbRZM2Y7i",
+    "songs": [
+      {
+        "title": "Turn Left Beautiful",
+        "url": "https://open.spotify.com/album/3L9zkEUbMTIjwzbRZM2Y7i",
+        "audio": null
+      }
+    ],
     "artwork_path": "covers/session-004.jpg",
     "artwork_alt": "Robin Williams and Princess Diana, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
     "has_transcript": true,
@@ -3601,7 +3659,7 @@ function renderCard(){
    is the only file we host ourselves. */
 const XP = [
   { key:"listen",    label:"Listen",        icon:"headphones", field:"podcast_url",     src:"the session podcast", link:true },
-  { key:"song",      label:"Song",          icon:"note",       field:"spotify_url",     src:"the song on Spotify", link:true },
+  { key:"song",      label:"Song",          icon:"note",       field:"songs",           src:"the song on Spotify" },
   { key:"journey",   label:"Audio Journey", icon:"journey",    field:"journey_path",    src:"media_assets kind='journey'" },
 
   { key:"notes",     label:"Read Notes",    icon:"book",       field:"has_transcript",  src:"transcripts.raw_text",           hidden:true },
@@ -3621,20 +3679,29 @@ function renderSession(){
     : "Channelled by — not yet recorded";
 
   $("#s-experience").innerHTML = XP.filter(x=>!x.hidden).map(x=>{
-    const ready = x.key === "listen"
-      ? !!(session.podcast_audio_url || session.podcast_url)
-      : !!session[x.field];
+    const songs = session.songs || [];
+    const ready = x.key === "listen"  ? !!(session.podcast_audio_url || session.podcast_url)
+                : x.key === "song"    ? songs.length > 0
+                : x.key === "journey" ? !!session.journey_path
+                : !!session[x.field];
+    // more than one song is rare enough to mark quietly rather than redesign for
+    const badge = (x.key === "song" && songs.length > 1)
+      ? `<span class="count">${songs.length}</span>` : "";
     return `<button class="xp" data-xp="${x.key}" ${ready?"":"disabled"}>
-      ${svg(x.icon,21)}<span>${x.label}</span></button>`;
+      ${svg(x.icon,21)}<span>${x.label}</span>${badge}</button>`;
   }).join("");
 
   $$("[data-xp]").forEach(b=>b.addEventListener("click",()=>{
     const x = XP.find(v=>v.key===b.dataset.xp);
-    const v = session[x.field];
-    // Listen plays here; Song still opens Spotify.
-    if(x.key === "listen" && session.podcast_audio_url){ openPlayer(session); return; }
-    if(x.link && v){ window.open(v, "_blank", "noopener,noreferrer"); return; }
-    toast(v ? `${x.label} — ${x.src}` : `${x.label} — not added yet`);
+    if(x.key === "listen"){
+      if(session.podcast_audio_url){ openPlayer(session); return; }
+      if(session.podcast_url){ window.open(session.podcast_url, "_blank", "noopener,noreferrer"); return; }
+    }
+    if(x.key === "journey"){
+      if(session.journey_path){ openPlayer(session, "journey"); return; }
+    }
+    if(x.key === "song"){ openSongs(); return; }
+    toast(`${x.label} — not added yet`);
   }));
 
   $("#s-wisdom").innerHTML = session.wisdom_codes.map((w,i)=>`
@@ -3856,7 +3923,7 @@ const clock = t => {
 };
 
 /* where you stopped, remembered per session on this device */
-const posKey = n => "deadtalks:pos:" + n;
+const posKey = n => "deadtalks:pos:" + n + ":" + playingKind;
 function rememberPosition(){
   if(!playingSession || !audio.duration) return;
   try{
@@ -3874,10 +3941,10 @@ function rememberedPosition(n){
 }
 
 /* lock-screen and headphone controls on a phone */
-function describeToSystem(sess){
+function describeToSystem(sess, kind){
   if(!("mediaSession" in navigator)) return;
   navigator.mediaSession.metadata = new MediaMetadata({
-    title: tileLabel(sess.title),
+    title: (kind === "journey" ? "Audio Journey — " : "") + tileLabel(sess.title),
     artist: "Channelled by " + (sess.channelled_by || "Dead Talks"),
     album: "Dead Talks",
     artwork: [{ src: new URL(sess.artwork_path, location.href).href, sizes: "512x512", type: "image/jpeg" }]
@@ -3890,29 +3957,69 @@ function describeToSystem(sess){
   set("seekto", d=>{ if(d && d.seekTime != null) audio.currentTime = d.seekTime; });
 }
 
-function openPlayer(sess){
-  const src = sess.podcast_audio_url;
-  if(!src){ toast("No recording for this session yet"); return; }
+let playingKind = "episode";
 
-  if(playingSession !== sess){
+function openPlayer(sess, kind){
+  kind = kind || "episode";
+  const src = kind === "journey" ? sess.journey_path : sess.podcast_audio_url;
+  if(!src){ toast("Nothing recorded for this yet"); return; }
+
+  if(playingSession !== sess || playingKind !== kind){
     rememberPosition();
-    playingSession = sess;
+    playingSession = sess; playingKind = kind;
     audio.src = src;
     audio.load();
     const at = rememberedPosition(sess.session_number);
     if(at) audio.addEventListener("loadedmetadata", ()=>{ audio.currentTime = at; }, { once:true });
-    describeToSystem(sess);
+    describeToSystem(sess, kind);
   }
 
-  $("#play-title").textContent = sess.title;
+  $("#play-title").textContent = kind === "journey"
+    ? "Audio Journey — " + tileLabel(sess.title)
+    : sess.title;
   $("#play-date").textContent  = prettyDate(sess.session_date);
   $("#play-art").innerHTML     = `<img src="${sess.artwork_path}" alt="">`;
-  $("#play-apple").style.display = sess.podcast_url ? "" : "none";
-  $("#now-title").textContent  = tileLabel(sess.title);
+  $("#play-apple").style.display = (kind === "episode" && sess.podcast_url) ? "" : "none";
+  $("#now-title").textContent  = (kind === "journey" ? "Journey · " : "") + tileLabel(sess.title);
   paintPlayer();
   $("#play-sheet").classList.add("show");
   audio.play().catch(()=>{ /* they can press play themselves */ });
 }
+
+/* One song opens straight away. Two or more get a short list, built
+   from the same row the Wisdom Codes use, rather than a second button
+   crowding the three-across grid. */
+function openSongs(){
+  const songs = session.songs || [];
+  if(!songs.length){ toast("No song for this session yet"); return; }
+  if(songs.length === 1){ playSong(songs[0]); return; }
+
+  $("#song-sub").textContent = songs.length + " songs came out of this session";
+  $("#song-list").innerHTML = songs.map((g,i)=>`
+    <button class="song-row" data-song="${i}">
+      <span class="ico">${svg("note",19)}</span>
+      <span class="name">${g.title}</span>
+      <span class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="1.6"><path d="m9 6 6 6-6 6"/></svg></span>
+    </button>`).join("");
+  $$("[data-song]").forEach(b=>b.addEventListener("click",()=>{
+    playSong(songs[+b.dataset.song]);
+  }));
+  $("#song-sheet").classList.add("show");
+}
+
+function playSong(g){
+  $("#song-sheet").classList.remove("show");
+  // when the songs are hosted here they will play in the same player
+  if(g.audio){ openPlayer(session, "song"); return; }
+  if(g.url){ window.open(g.url, "_blank", "noopener,noreferrer"); return; }
+  toast("That song has no link yet");
+}
+
+$("#song-close").addEventListener("click", ()=> $("#song-sheet").classList.remove("show"));
+$("#song-sheet").addEventListener("click", e=>{
+  if(e.target.id === "song-sheet") $("#song-sheet").classList.remove("show");
+});
 
 function paintPlayer(){
   const playing = !audio.paused && !audio.ended;
