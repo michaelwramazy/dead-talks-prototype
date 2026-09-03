@@ -433,6 +433,71 @@ body{
 .avatar-pick .choose:hover{border-color:var(--gold)}
 
 /* a reflection lives on the parchment, so it takes ink colours */
+/* ---------- the listening player ---------- */
+.play-sheet .sheet-inner{padding-bottom:26px}
+.play-head{display:flex;gap:14px;align-items:center;margin:0 0 20px}
+.play-head .art{
+  width:64px;height:64px;flex:0 0 64px;border-radius:7px;overflow:hidden;
+  border:1px solid rgba(212,169,78,.4);background:rgba(8,14,34,.6);
+}
+.play-head .art img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.play-head .who{flex:1;min-width:0;text-align:left}
+.play-head .who .t{
+  font-family:var(--display);font-size:15px;color:var(--parchment);
+  line-height:1.3;margin:0 0 3px;
+}
+.play-head .who .d{
+  font-family:var(--body);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold);margin:0;
+}
+
+.scrub{width:100%;margin:0 0 4px;-webkit-appearance:none;appearance:none;
+  background:transparent;cursor:pointer;height:22px}
+.scrub::-webkit-slider-runnable-track{
+  height:3px;border-radius:2px;background:rgba(239,223,192,.22);
+}
+.scrub::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;
+  background:var(--gold-bright);margin-top:-5px;border:0;
+}
+.scrub::-moz-range-track{height:3px;border-radius:2px;background:rgba(239,223,192,.22)}
+.scrub::-moz-range-thumb{width:13px;height:13px;border:0;border-radius:50%;background:var(--gold-bright)}
+.scrub:focus-visible{outline:2px solid var(--gold-bright);outline-offset:4px}
+
+.times{
+  display:flex;justify-content:space-between;font-family:var(--body);
+  font-size:10.5px;color:rgba(239,223,192,.5);margin:0 0 18px;
+  font-variant-numeric:tabular-nums;
+}
+.transport{display:flex;align-items:center;justify-content:center;gap:26px;margin-bottom:6px}
+.transport button{
+  background:none;border:0;cursor:pointer;color:var(--parchment);
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;
+}
+.transport button:hover{color:var(--gold-bright)}
+.transport .skip span{font-family:var(--body);font-size:9px;letter-spacing:.06em;opacity:.7}
+.transport .big{
+  width:62px;height:62px;border-radius:50%;
+  border:1px solid rgba(212,169,78,.55);background:rgba(11,18,41,.72);
+  align-items:center;justify-content:center;
+}
+.transport .big:hover{border-color:var(--gold-bright)}
+
+/* a strip that stays put while you keep browsing */
+.nowbar{
+  position:absolute;left:0;right:0;bottom:56px;z-index:35;display:none;
+  align-items:center;gap:11px;padding:9px 14px;
+  background:rgba(11,18,41,.97);border-top:1px solid rgba(212,169,78,.3);
+}
+.nowbar.show{display:flex}
+.nowbar .t{
+  flex:1;min-width:0;font-family:var(--display);font-size:12.5px;
+  color:var(--parchment);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:left;background:none;border:0;cursor:pointer;padding:0;
+}
+.nowbar button.ctl{background:none;border:0;color:var(--parchment);cursor:pointer;padding:3px}
+.nowbar .bar{position:absolute;left:0;bottom:0;height:2px;background:var(--gold);width:0}
+
 .refl-note{
   margin:14px 0 0;padding:12px 14px;border-radius:6px;text-align:left;
   background:rgba(11,18,41,.055);border:1px solid rgba(44,35,23,.18);
@@ -916,6 +981,57 @@ body{
 
   </div>
 
+  <!-- ==== LISTENING ============ -->
+  <audio id="player" preload="none"></audio>
+
+  <div class="nowbar" id="nowbar">
+    <button class="ctl" id="now-toggle" aria-label="Play or pause">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button class="t" id="now-title" aria-label="Open the player"></button>
+    <button class="ctl" id="now-close" aria-label="Stop listening">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.7"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <span class="bar" id="now-bar"></span>
+  </div>
+
+  <div class="sheet play-sheet" id="play-sheet">
+    <div class="sheet-inner">
+      <div class="play-head">
+        <span class="art" id="play-art"></span>
+        <span class="who">
+          <p class="t" id="play-title"></p>
+          <p class="d" id="play-date"></p>
+        </span>
+      </div>
+
+      <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0"
+             aria-label="Position in the episode">
+      <div class="times"><span id="play-at">0:00</span><span id="play-left">—</span></div>
+
+      <div class="transport">
+        <button class="skip" id="play-back" aria-label="Back fifteen seconds">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.5"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          <span>15</span>
+        </button>
+        <button class="big" id="play-toggle" aria-label="Play or pause">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" id="play-icon">
+            <path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="skip" id="play-fwd" aria-label="Forward thirty seconds">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.5"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+          <span>30</span>
+        </button>
+      </div>
+
+      <button class="ghost linky" id="play-apple">Open in Apple Podcasts</button>
+      <button class="ghost" id="play-close">Close</button>
+    </div>
+  </div>
+
   <!-- ==== REFLECTION ============ -->
   <div class="sheet" id="refl-sheet">
     <div class="sheet-inner">
@@ -1036,6 +1152,8 @@ const SESSIONS = [
     "journey_path": null,
     "song_path": null,
     "podcast_url": "https://podcasts.apple.com/ca/podcast/the-art-of-intimacy-with-rumi-and-anais-nin/id1707752987?i=1000724265926",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/5cxagp5at9xdvwsc/DT_Rumi_Nin_podcast7rsbp.mp3",
+    "podcast_seconds": 2944,
     "spotify_url": "https://open.spotify.com/album/3D8gAqRib5xQkfgmKO8ubf",
     "artwork_path": "covers/session-001.jpg",
     "artwork_alt": "Rumi and Anaïs Nin, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
@@ -2135,6 +2253,8 @@ const SESSIONS = [
     "journey_path": null,
     "song_path": null,
     "podcast_url": "https://podcasts.apple.com/ca/podcast/paradox-alan-watts-frida-kahlo/id1707752987?i=1000726909898",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/bsp2fgmc2zcsm4rd/DT_Alam_Watts_Frida_Kahlo_podcastbnl49.mp3",
+    "podcast_seconds": 2803,
     "spotify_url": null,
     "artwork_path": "covers/session-002.jpg",
     "artwork_alt": "Alan Watts and Frida Kahlo, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
@@ -2530,6 +2650,8 @@ const SESSIONS = [
     "journey_path": null,
     "song_path": null,
     "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-abraham-lincoln-and-leo-tolstoy/id1707752987?i=1000755413132",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/4w472ddr8qgymnuj/DY_Lincoln_Tolstoy_Podcast6sa0u.mp3",
+    "podcast_seconds": 3447,
     "spotify_url": "https://open.spotify.com/album/6lpS2iZx9o4GQJ3QM3Bpzd",
     "artwork_path": "covers/session-003.jpg",
     "artwork_alt": "Abraham Lincoln and Leo Tolstoy, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
@@ -2765,6 +2887,8 @@ const SESSIONS = [
     "journey_path": null,
     "song_path": null,
     "podcast_url": "https://podcasts.apple.com/ca/podcast/princess-diana-and-robin-williams-how-to-live/id1707752987?i=1000761980231",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/vhvhy9ke4cy8rvvh/AUL_DT_Robin_Diana_Podcast6bs2r.mp3",
+    "podcast_seconds": 2903,
     "spotify_url": "https://open.spotify.com/album/3L9zkEUbMTIjwzbRZM2Y7i",
     "artwork_path": "covers/session-004.jpg",
     "artwork_alt": "Robin Williams and Princess Diana, divided by a diagonal seam of gold light against a starfield, with a crescent moon above and painted flowers along the borders.",
@@ -3497,7 +3621,9 @@ function renderSession(){
     : "Channelled by — not yet recorded";
 
   $("#s-experience").innerHTML = XP.filter(x=>!x.hidden).map(x=>{
-    const ready = !!session[x.field];
+    const ready = x.key === "listen"
+      ? !!(session.podcast_audio_url || session.podcast_url)
+      : !!session[x.field];
     return `<button class="xp" data-xp="${x.key}" ${ready?"":"disabled"}>
       ${svg(x.icon,21)}<span>${x.label}</span></button>`;
   }).join("");
@@ -3505,7 +3631,8 @@ function renderSession(){
   $$("[data-xp]").forEach(b=>b.addEventListener("click",()=>{
     const x = XP.find(v=>v.key===b.dataset.xp);
     const v = session[x.field];
-    // Listen and Song are links out; open them rather than describing them.
+    // Listen plays here; Song still opens Spotify.
+    if(x.key === "listen" && session.podcast_audio_url){ openPlayer(session); return; }
     if(x.link && v){ window.open(v, "_blank", "noopener,noreferrer"); return; }
     toast(v ? `${x.label} — ${x.src}` : `${x.label} — not added yet`);
   }));
@@ -3713,6 +3840,154 @@ $("#wc-share").addEventListener("click", async ()=>{
     }
   }
 });
+/* ---------- listening ----------
+   The episode audio is served by Podbean straight from the podcast
+   feed, so nothing is stored or paid for here. One <audio> element
+   lives outside every sheet, which is what lets a session keep
+   playing while you carry on browsing the archive. */
+const audio = $("#player");
+let playingSession = null;
+
+const clock = t => {
+  if(!isFinite(t) || t < 0) t = 0;
+  const h = Math.floor(t/3600), m = Math.floor(t%3600/60), sec = Math.floor(t%60);
+  return h ? `${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`
+           : `${m}:${String(sec).padStart(2,"0")}`;
+};
+
+/* where you stopped, remembered per session on this device */
+const posKey = n => "deadtalks:pos:" + n;
+function rememberPosition(){
+  if(!playingSession || !audio.duration) return;
+  try{
+    if(audio.currentTime > 15 && audio.currentTime < audio.duration - 20){
+      localStorage.setItem(posKey(playingSession.session_number),
+                           String(Math.floor(audio.currentTime)));
+    } else {
+      localStorage.removeItem(posKey(playingSession.session_number));
+    }
+  }catch(e){ /* private browsing; not worth interrupting anyone over */ }
+}
+function rememberedPosition(n){
+  try{ return parseInt(localStorage.getItem(posKey(n)) || "0", 10) || 0; }
+  catch(e){ return 0; }
+}
+
+/* lock-screen and headphone controls on a phone */
+function describeToSystem(sess){
+  if(!("mediaSession" in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: tileLabel(sess.title),
+    artist: "Channelled by " + (sess.channelled_by || "Dead Talks"),
+    album: "Dead Talks",
+    artwork: [{ src: new URL(sess.artwork_path, location.href).href, sizes: "512x512", type: "image/jpeg" }]
+  });
+  const set = (a, fn) => { try{ navigator.mediaSession.setActionHandler(a, fn); }catch(e){} };
+  set("play",  ()=>audio.play());
+  set("pause", ()=>audio.pause());
+  set("seekbackward",  ()=>{ audio.currentTime = Math.max(0, audio.currentTime - 15); });
+  set("seekforward",   ()=>{ audio.currentTime = Math.min(audio.duration || 1e9, audio.currentTime + 30); });
+  set("seekto", d=>{ if(d && d.seekTime != null) audio.currentTime = d.seekTime; });
+}
+
+function openPlayer(sess){
+  const src = sess.podcast_audio_url;
+  if(!src){ toast("No recording for this session yet"); return; }
+
+  if(playingSession !== sess){
+    rememberPosition();
+    playingSession = sess;
+    audio.src = src;
+    audio.load();
+    const at = rememberedPosition(sess.session_number);
+    if(at) audio.addEventListener("loadedmetadata", ()=>{ audio.currentTime = at; }, { once:true });
+    describeToSystem(sess);
+  }
+
+  $("#play-title").textContent = sess.title;
+  $("#play-date").textContent  = prettyDate(sess.session_date);
+  $("#play-art").innerHTML     = `<img src="${sess.artwork_path}" alt="">`;
+  $("#play-apple").style.display = sess.podcast_url ? "" : "none";
+  $("#now-title").textContent  = tileLabel(sess.title);
+  paintPlayer();
+  $("#play-sheet").classList.add("show");
+  audio.play().catch(()=>{ /* they can press play themselves */ });
+}
+
+function paintPlayer(){
+  const playing = !audio.paused && !audio.ended;
+  const icon = playing
+    ? '<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+  $("#play-icon").innerHTML = icon;
+  $("#now-toggle").querySelector("svg").innerHTML = icon;
+
+  const dur = audio.duration ||
+    (playingSession && playingSession.podcast_seconds) || 0;
+  const at  = audio.currentTime || 0;
+  $("#play-at").textContent = clock(at);
+  $("#play-left").textContent = dur ? "−" + clock(dur - at) : "—";
+  const pct = dur ? (at / dur) : 0;
+  if(document.activeElement !== $("#scrub")) $("#scrub").value = Math.round(pct * 1000);
+  $("#now-bar").style.width = (pct * 100).toFixed(2) + "%";
+
+  const busy = !!playingSession && (playing || at > 0);
+  $("#nowbar").classList.toggle("show",
+    busy && !$("#play-sheet").classList.contains("show"));
+}
+
+audio.addEventListener("timeupdate", paintPlayer);
+audio.addEventListener("play",  paintPlayer);
+audio.addEventListener("pause", ()=>{ paintPlayer(); rememberPosition(); });
+audio.addEventListener("loadedmetadata", paintPlayer);
+audio.addEventListener("ended", ()=>{
+  if(playingSession){ try{ localStorage.removeItem(posKey(playingSession.session_number)); }catch(e){} }
+  paintPlayer();
+});
+audio.addEventListener("error", ()=>{
+  if(!audio.src) return;
+  toast("That recording would not load — try Apple Podcasts");
+});
+window.addEventListener("pagehide", rememberPosition);
+
+function togglePlay(){
+  if(audio.paused) audio.play().catch(()=>toast("Could not start playing"));
+  else audio.pause();
+}
+$("#play-toggle").addEventListener("click", togglePlay);
+$("#now-toggle").addEventListener("click", togglePlay);
+$("#play-back").addEventListener("click", ()=>{ audio.currentTime = Math.max(0, audio.currentTime - 15); });
+$("#play-fwd").addEventListener("click",  ()=>{ audio.currentTime = Math.min(audio.duration || 1e9, audio.currentTime + 30); });
+
+$("#scrub").addEventListener("input", e=>{
+  const dur = audio.duration || (playingSession && playingSession.podcast_seconds) || 0;
+  if(dur) $("#play-at").textContent = clock(dur * (e.target.value/1000));
+});
+$("#scrub").addEventListener("change", e=>{
+  const dur = audio.duration || 0;
+  if(dur) audio.currentTime = dur * (e.target.value/1000);
+});
+
+$("#play-close").addEventListener("click", ()=>{
+  $("#play-sheet").classList.remove("show"); paintPlayer();
+});
+$("#play-sheet").addEventListener("click", e=>{
+  if(e.target.id === "play-sheet"){ $("#play-sheet").classList.remove("show"); paintPlayer(); }
+});
+$("#now-title").addEventListener("click", ()=>{
+  if(playingSession) openPlayer(playingSession);
+});
+$("#now-close").addEventListener("click", ()=>{
+  rememberPosition();
+  audio.pause(); audio.removeAttribute("src"); audio.load();
+  playingSession = null;
+  $("#nowbar").classList.remove("show");
+});
+$("#play-apple").addEventListener("click", ()=>{
+  if(playingSession && playingSession.podcast_url)
+    window.open(playingSession.podcast_url, "_blank", "noopener,noreferrer");
+});
+
 /* ---------- reflections ----------
    A reflection is private: private_reflections is readable and writable
    only by the person who wrote it. Signing in is required, which is why
