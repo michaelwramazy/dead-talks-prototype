@@ -4367,7 +4367,9 @@ $("#auth-form").addEventListener("submit", async e=>{
       });
       if(error) throw error;
       authSent("Check your email",
-        "We sent a link to " + email + ". Open it on this device and you will be signed in.");
+        "We sent a link to " + email + ". Open it on this device and you will be signed in."
+        + " If nothing arrives within a few minutes, try again later — the"
+        + " project can only send a couple of emails an hour at the moment.");
       return;
     }
 
@@ -4377,10 +4379,27 @@ $("#auth-form").addEventListener("submit", async e=>{
         options:{ emailRedirectTo: location.origin + location.pathname }
       });
       if(error) throw error;
-      // With "Confirm email" on, Supabase returns a user but no session.
+
+      // Supabase will not reveal that an address is already taken — it
+      // returns a user with no identities and sends no email at all.
+      // Saying "check your inbox" there is a lie: nothing is coming.
+      const alreadyTaken = data && data.user
+        && Array.isArray(data.user.identities)
+        && data.user.identities.length === 0;
+      if(alreadyTaken){
+        setAuthMode("signin");
+        $("#auth-password").value = "";
+        toast("That address already has an account — sign in below");
+        return;
+      }
+
+      // With "Confirm email" on, a genuinely new signup returns a user
+      // but no session until they open the link.
       if(data && data.session){ closeAuth(); toast("Welcome"); return; }
       authSent("One more step",
-        "We sent a confirmation to " + email + ". Open it, then come back and sign in.");
+        "We sent a confirmation to " + email + ". Open it, then come back and sign in."
+        + " If nothing arrives within a few minutes, try again later — the"
+        + " project can only send a couple of emails an hour at the moment.");
       return;
     }
 
