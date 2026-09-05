@@ -4653,6 +4653,11 @@ function wireLike(sel, targetFn){
 function everything(){
   const out = [];
   SESSIONS.forEach(s=>{
+    /* the session card itself: liking it saves it, same as a quote,
+       so it has to be able to appear here too */
+    out.push({
+      id:s.id, kind:"session", session:s, title:s.title,
+      quote:s.standfirst || "", attribution:prettyDate(s.session_date), n:0 });
     s.wisdom_codes.forEach(c=>out.push({
       id:c.id, kind:"code", session:s, title:c.title,
       quote:c.quote, attribution:c.attribution, n:c.code_number }));
@@ -4677,20 +4682,25 @@ function renderMine(){
     return;
   }
 
-  const kept = everything().filter(x=>
-    set.has((x.kind === "code" ? "wisdom_code" : "wisdom_item") + ":" + x.id));
+  const typeOf = k => k.kind === "code" ? "wisdom_code"
+                    : k.kind === "item" ? "wisdom_item" : "session";
+  const kept = everything().filter(x => x.id && set.has(typeOf(x) + ":" + x.id));
+  const nSess = new Set(kept.map(k=>k.session.session_number)).size;
   $("#mine-sub").textContent = kept.length
-    ? `${kept.length} ${kept.length===1?"code":"codes"} across ${new Set(kept.map(k=>k.session.session_number)).size} sessions`
+    ? `${kept.length} ${kept.length===1?"thing":"things"} across `
+      + `${nSess} ${nSess===1?"session":"sessions"}`
     : "";
   if(!kept.length){
     $("#mine-list").innerHTML =
       `<div class="mine-empty">Nothing here yet. Tap the heart on any quote
-        and it gathers here.</div>`;
+        or card and it gathers here.</div>`;
     return;
   }
 
   let html = "", sess = null;
-  kept.sort((a,b)=> a.session.session_number - b.session.session_number || a.n - b.n);
+  kept.sort((a,b)=> a.session.session_number - b.session.session_number
+                 || (a.kind === "session" ? -1 : b.kind === "session" ? 1 : 0)
+                 || a.n - b.n);
   kept.forEach(k=>{
     if(k.session.session_number !== sess){
       sess = k.session.session_number;
@@ -4698,7 +4708,8 @@ function renderMine(){
                  <span>${tileLabel(k.session.title)}</span><span class="line"></span></div>`;
     }
     html += `<button class="passage" data-keep="${k.session.session_number}|${k.kind}|${k.n}">
-        <p class="q">${k.title ? "<strong>"+k.title+"</strong><br>" : ""}${k.quote}</p>
+        <p class="q">${k.kind === "session" ? "<strong>The card · " + k.title + "</strong>"
+                      : (k.title ? "<strong>"+k.title+"</strong><br>" : "") + k.quote}</p>
         <p class="a">${k.attribution}</p>
       </button>`;
   });
@@ -4706,6 +4717,7 @@ function renderMine(){
   $$("[data-keep]").forEach(b=>b.addEventListener("click",()=>{
     const [sn, kind, n] = b.dataset.keep.split("|");
     selectSession(+sn);
+    if(kind === "session") return;          // the card is already open
     const list = kind === "code" ? session.wisdom_codes : session.wisdom_items;
     const i = list.findIndex(x=>(kind === "code" ? x.code_number : x.n) === +n);
     if(i >= 0) openDeck(kind === "code" ? "code" : "item", i);
