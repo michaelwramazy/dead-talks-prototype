@@ -235,7 +235,7 @@ body{
 .tab:focus-visible{outline:2px solid var(--gold-bright);outline-offset:-4px;border-radius:6px}
 
 /* ---------- flip card ---------- */
-.flip-stage{perspective:1600px;margin-top:2px}
+.flip-stage{perspective:1600px;margin-top:2px;position:relative}
 .flipper{
   position:relative;transition:transform .85s cubic-bezier(.2,.75,.3,1);
   transform-style:preserve-3d;
@@ -708,7 +708,7 @@ body{
   background:
     radial-gradient(110% 70% at 40% 8%,rgba(255,255,255,.36),transparent 58%),
     linear-gradient(170deg,var(--parchment) 0%,var(--parchment-deep) 100%);
-  border-radius:16px;color:var(--ink);padding:28px 24px 22px;
+  border-radius:16px;color:var(--ink);padding:28px 24px 22px;position:relative;
   box-shadow:0 20px 50px rgba(0,0,0,.6);
   animation:rise .5s cubic-bezier(.2,.8,.3,1) both;
 }
@@ -739,6 +739,89 @@ body{
 .wc-actions{display:flex;justify-content:space-around;padding:6px 12px 0}
 .wc-actions .iconbtn{color:var(--ink);opacity:.72}
 .wc-actions .iconbtn:hover{opacity:1}
+
+/* ---------- one heart ----------
+   The like and the save are the same gesture, so they are the same
+   control, in the same corner, in two states.
+
+   Not liked: a rose heart with the count beside it.
+   Liked:     a gold wrap folded over the corner with the heart cut
+              clean out of it, so the card itself shows through.
+
+   The gold is drawn only for the person who liked it. Everyone else
+   sees the rose heart and a count that now includes them. */
+.likecorner{
+  position:absolute;top:0;right:0;z-index:6;
+  display:flex;flex-direction:column;align-items:flex-end;
+  width:74px;padding-right:17px;pointer-events:none;
+}
+.likecorner > *{pointer-events:auto}
+.lc-heart{
+  background:none;border:0;padding:0;margin:0 -17px 0 0;cursor:pointer;
+  width:74px;height:74px;display:block;line-height:0;
+}
+.lc-heart svg{display:block;overflow:visible}
+/* the unliked heart is drawn, not filled: an open outline with the
+   card showing through it, so it reads as an invitation rather than
+   as something already done */
+.lc-plain{
+  fill:none;stroke:var(--rose);stroke-width:1.6;
+  stroke-linejoin:round;stroke-linecap:round;opacity:.92;
+  transition:opacity .18s ease,transform .18s cubic-bezier(.2,.8,.3,1);
+  transform-origin:49px 26px;
+}
+.lc-heart:hover .lc-plain{opacity:1;transform:scale(1.09)}
+.lc-wrap{display:none;fill:var(--gold)}
+/* on the artwork face the outline would otherwise disappear into the
+   frame's gold corner ornament, so it is drawn a shade heavier and
+   lifted off the picture with a shadow */
+.likecorner.dark .lc-plain{
+  stroke-width:1.9;opacity:1;
+  filter:drop-shadow(0 1px 3px rgba(0,0,0,.9)) drop-shadow(0 0 6px rgba(0,0,0,.5));
+}
+.likecorner.dark.overleaf .lc-plain{
+  stroke-width:1.6;opacity:.92;filter:none;
+}
+.lc-fold{display:none;fill:rgba(122,96,48,.42)}
+.likecorner.on .lc-plain{display:none}
+.likecorner.on .lc-wrap,.likecorner.on .lc-fold{display:block}
+.lc-heart:focus-visible{outline:2px solid var(--gold-bright);outline-offset:-6px;border-radius:8px}
+/* the number is always there, even at nought — it is the quiet
+   evidence that other people have been here */
+.lc-count{
+  background:none;border:0;cursor:pointer;padding:1px 7px 3px;margin-top:-13px;
+  font-family:var(--body);font-size:12px;font-weight:400;letter-spacing:.03em;
+  color:var(--ink-soft);
+}
+.lc-count:hover{color:var(--ink);text-decoration:underline}
+.lc-count:focus-visible{outline:2px solid var(--gold-bright);outline-offset:1px;border-radius:4px}
+/* the session card is artwork on the front and parchment on the back,
+   so the number changes colour when the card turns over — the wrap
+   itself is gold on both and needs no help */
+.likecorner.dark .lc-count{color:var(--parchment);text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 7px rgba(0,0,0,.6)}
+.likecorner.dark .lc-count:hover{color:var(--parchment)}
+.likecorner.dark.overleaf .lc-count{color:var(--ink-soft);text-shadow:none}
+.likecorner.dark.overleaf .lc-count:hover{color:var(--ink)}
+
+/* who liked this */
+.who-row{
+  display:flex;align-items:center;gap:11px;padding:8px 2px;
+  border-bottom:1px solid rgba(212,169,78,.14);
+}
+.who-row:last-child{border-bottom:0}
+.who-face{
+  width:31px;height:31px;border-radius:50%;flex:0 0 31px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(212,169,78,.45);background:rgba(255,255,255,.05);
+  font-size:11px;letter-spacing:.04em;color:var(--parchment);
+}
+.who-face img{width:100%;height:100%;object-fit:cover}
+.who-name{font-size:13.5px;font-weight:300;color:rgba(239,223,192,.9)}
+.who-empty{
+  text-align:center;font-size:12.5px;font-weight:300;
+  color:rgba(239,223,192,.55);padding:16px 0 6px;margin:0;
+}
+#who-list{max-height:46vh;overflow-y:auto;margin-bottom:16px}
 .wc-actions .iconbtn.on{color:var(--rose);opacity:1}
 .wc-actions .iconbtn.on.mark{color:var(--gold-dim);opacity:1}
 .reflect-btn{
@@ -857,6 +940,22 @@ body{
       </div>
 
       <div class="flip-stage" id="flip-stage">
+        <div class="likecorner dark" id="card-like">
+          <button class="lc-heart" aria-label="Like this session">
+            <svg viewBox="0 0 74 74" width="74" height="74" aria-hidden="true">
+              <defs>
+                <mask id="lcknock-card-like" maskUnits="userSpaceOnUse" x="0" y="0" width="74" height="74">
+                  <rect x="0" y="0" width="74" height="74" fill="#fff"/>
+                  <path transform="translate(37,13)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z" fill="#000"/>
+                </mask>
+              </defs>
+              <path class="lc-wrap" d="M10 0 L64 0 A10 10 0 0 1 74 10 L74 64 Z" mask="url(#lcknock-card-like)"/>
+              <path class="lc-fold" d="M10 0 L14 0 L74 60 L74 64 Z"/>
+              <path class="lc-plain" transform="translate(37,13)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/>
+            </svg>
+          </button>
+          <button class="lc-count" aria-label="See who liked this session">0</button>
+        </div>
         <div class="flipper" id="flipper">
           <div class="face front">
             <div class="cover" style="aspect-ratio:1024/1792">
@@ -912,14 +1011,6 @@ body{
         <span id="reveal-hint-label">Tap the card to reveal the session</span>
       </button>
 
-      <div class="card-actions">
-        <button class="iconbtn" data-toggle="love" aria-label="Love this session">
-          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/></svg>
-        </button>
-        <button class="iconbtn mark" data-toggle="save" aria-label="Save this session">
-          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3h12v18l-6-4.6L6 21z"/></svg>
-        </button>
-      </div>
     </section>
 
     <!-- ============ SESSION DETAIL ============ -->
@@ -935,6 +1026,22 @@ body{
       </div>
 
       <div class="wisdom-card" id="wc-card">
+        <div class="likecorner" id="wc-like">
+          <button class="lc-heart" aria-label="Like this quote">
+            <svg viewBox="0 0 74 74" width="74" height="74" aria-hidden="true">
+              <defs>
+                <mask id="lcknock-wc-like" maskUnits="userSpaceOnUse" x="0" y="0" width="74" height="74">
+                  <rect x="0" y="0" width="74" height="74" fill="#fff"/>
+                  <path transform="translate(37,13)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z" fill="#000"/>
+                </mask>
+              </defs>
+              <path class="lc-wrap" d="M10 0 L58 0 A16 16 0 0 1 74 16 L74 64 Z" mask="url(#lcknock-wc-like)"/>
+              <path class="lc-fold" d="M10 0 L14 0 L74 60 L74 64 Z"/>
+              <path class="lc-plain" transform="translate(37,13)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/>
+            </svg>
+          </button>
+          <button class="lc-count" aria-label="See who liked this quote">0</button>
+        </div>
         <div class="wc-sun" id="wc-icon"></div>
         <div class="wc-kicker" id="wc-kicker"></div>
         <h2 class="wc-title" id="wc-title"></h2>
@@ -946,12 +1053,6 @@ body{
         <div class="ornament" style="margin:18px 20px 12px"><div class="line"></div><span class="mark">✦</span><div class="line"></div></div>
 
         <div class="wc-actions">
-          <button class="iconbtn" data-toggle="wc-love" aria-label="Love this wisdom code">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/></svg>
-          </button>
-          <button class="iconbtn mark" data-toggle="wc-save" aria-label="Save this wisdom code">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3h12v18l-6-4.6L6 21z"/></svg>
-          </button>
           <button class="iconbtn" id="wc-share" aria-label="Share this wisdom code">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 16V3"/><path d="m7.5 7.5 4.5-4.5 4.5 4.5"/><path d="M5 13v6.5a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V13"/></svg>
           </button>
@@ -985,12 +1086,8 @@ body{
     <!-- ==== MY COLLECTION ============ -->
     <section class="view" id="view-mine">
       <div class="mine-head">
-        <h2 id="mine-title">Your codes</h2>
+        <h2 id="mine-title">Saved</h2>
         <p id="mine-sub"></p>
-      </div>
-      <div class="mine-tabs">
-        <button class="on" data-mine="loved">Loved</button>
-        <button data-mine="saved">Saved</button>
       </div>
       <div id="mine-list"></div>
     </section>
@@ -1007,6 +1104,15 @@ body{
   </div>
 
   <!-- ==== SONGS ============ -->
+  <div class="sheet" id="who-sheet">
+    <div class="sheet-inner">
+      <h3>Liked by</h3>
+      <p id="who-sub"></p>
+      <div id="who-list"></div>
+      <button class="ghost" id="who-close">Close</button>
+    </div>
+  </div>
+
   <div class="sheet" id="song-sheet">
     <div class="sheet-inner">
       <h3>Songs from this session</h3>
@@ -1177,6 +1283,7 @@ const ART = null;
    Do not edit by hand: change it in the database and rebuild. */
 const SESSIONS = [
   {
+    "id": "5056eb98-55ae-412b-b41f-78d03b1fa3c8",
     "session_number": 1,
     "title": "Into Me You See: Freedom, Intimacy & the Sacred Dance of Love",
     "session_date": "2025-08-29",
@@ -2289,6 +2396,7 @@ const SESSIONS = [
     ]
   },
   {
+    "id": "52be831c-81b5-4146-af47-a7e0b57ae20f",
     "session_number": 2,
     "title": "The Paradox Principle: Wisdom From Alan Watts and Frida Kahlo",
     "session_date": "2025-09-12",
@@ -2686,6 +2794,7 @@ const SESSIONS = [
     ]
   },
   {
+    "id": "555e6f55-7444-4218-8d4a-ad1caac909cd",
     "session_number": 3,
     "title": "Power, Freedom & the Collective Consciousness Field",
     "session_date": "2026-03-13",
@@ -2929,6 +3038,7 @@ const SESSIONS = [
     ]
   },
   {
+    "id": "2892ab65-8933-410a-b0c7-5673063741f9",
     "session_number": 4,
     "title": "Unimaginable Life: Messages from Princess Diana & Robin Williams",
     "session_date": "2026-04-10",
@@ -3645,6 +3755,7 @@ function renderHome(){
 }
 
 function renderCard(){
+  paintLike($("#card-like"), sessionTarget());
   $("#card-eyebrow").textContent = prettyDate(session.session_date);
   $("#card-title").textContent = session.title;
   $("#card-beings").innerHTML = session.show_beings
@@ -3834,6 +3945,7 @@ function flipCard(force){
   const f = $("#flipper");
   const to = (force === undefined) ? !f.classList.contains("flipped") : force;
   f.classList.toggle("flipped", to);
+  $("#card-like").classList.toggle("overleaf", to);
   $("#reveal-hint-label").textContent = to
     ? "Tap the card to turn it back"
     : "Tap the card to reveal the session";
@@ -4228,8 +4340,7 @@ const SB_URL = "https://bnkwbuiqziikqxftqhtv.supabase.co";
 const SB_KEY = "sb_publishable_hsWz42RCvwdo-N5aPkJh5A_FIEtVjkm";
 
 let db = null, me = null;
-let mine = { loved:new Set(), saved:new Set() };
-let mineTab = "loved";
+let mine = { loved:new Set() };
 let pendingAction = null;   // what they clicked before signing in
 
 function authReady(){
@@ -4368,8 +4479,7 @@ $("#auth-form").addEventListener("submit", async e=>{
       if(error) throw error;
       authSent("Check your email",
         "We sent a link to " + email + ". Open it on this device and you will be signed in."
-        + " If nothing arrives within a few minutes, try again later — the"
-        + " project can only send a couple of emails an hour at the moment.");
+        + " If nothing arrives within a few minutes, check your spam folder.");
       return;
     }
 
@@ -4398,8 +4508,7 @@ $("#auth-form").addEventListener("submit", async e=>{
       if(data && data.session){ closeAuth(); toast("Welcome"); return; }
       authSent("One more step",
         "We sent a confirmation to " + email + ". Open it, then come back and sign in."
-        + " If nothing arrives within a few minutes, try again later — the"
-        + " project can only send a couple of emails an hour at the moment.");
+        + " If nothing arrives within a few minutes, check your spam folder.");
       return;
     }
 
@@ -4425,15 +4534,29 @@ $("#auth-form").addEventListener("submit", async e=>{
   }
 });
 
-/* what the user keeps */
+/* ---------- one heart ----------
+   Liking and saving are the same act, so there is one set and one
+   list behind it. A key is "type:id" rather than a bare id, because
+   a session and a quote could otherwise collide. */
+let likeCounts = new Map();
+
+const likeKey = t => t.type + ":" + t.id;
+
+/* Every count on the site in one query. reaction_counts is three
+   columns wide and public since migration 016. */
+async function loadCounts(){
+  const { data, error } = await db.from("reaction_counts")
+    .select("target_type,target_id,likes");
+  if(error) return;
+  likeCounts = new Map((data||[]).map(r => [r.target_type + ":" + r.target_id, r.likes]));
+}
+
 async function loadMine(){
-  if(!me){ mine = { loved:new Set(), saved:new Set() }; return; }
-  const [r, b] = await Promise.all([
-    db.from("reactions").select("target_id,target_type,reaction"),
-    db.from("bookmarks").select("target_id,target_type")
-  ]);
-  mine.loved = new Set((r.data||[]).filter(x=>x.reaction==="love").map(x=>x.target_id));
-  mine.saved = new Set((b.data||[]).map(x=>x.target_id));
+  if(!me){ mine = { loved:new Set() }; return; }
+  const { data } = await db.from("reactions")
+    .select("target_id,target_type")
+    .eq("user_id", me.id).eq("reaction","love");
+  mine.loved = new Set((data||[]).map(x => x.target_type + ":" + x.target_id));
 }
 
 function currentTarget(){
@@ -4442,39 +4565,88 @@ function currentTarget(){
   return { id:w.id, type: deckKind === "code" ? "wisdom_code" : "wisdom_item" };
 }
 
-function paintKeepState(){
-  const t = currentTarget();
-  const love = $('[data-toggle="wc-love"]'), save = $('[data-toggle="wc-save"]');
-  if(!love || !save) return;
-  love.classList.toggle("on", !!(t && mine.loved.has(t.id)));
-  save.classList.toggle("on", !!(t && mine.saved.has(t.id)));
+function sessionTarget(){
+  return (session && session.id) ? { id:session.id, type:"session" } : null;
 }
 
-async function toggleKeep(kind){
-  const t = currentTarget();
+/* The number is always drawn, even at nought: it is the quiet
+   evidence that other people have been here. */
+function paintLike(el, t){
+  if(!el) return;
+  const key   = t ? likeKey(t) : null;
+  const count = el.querySelector(".lc-count");
+  el.classList.toggle("on", !!(key && mine.loved.has(key)));
+  count.textContent = key ? (likeCounts.get(key) || 0) : 0;
+  el.style.visibility = t ? "visible" : "hidden";
+}
+
+function paintKeepState(){
+  paintLike($("#wc-like"), currentTarget());
+  paintLike($("#card-like"), sessionTarget());
+}
+
+async function toggleLike(t, el){
   if(!t) return;
-  if(!me){ pendingAction = kind; openAuth(); return; }
-  const on = kind === "love" ? mine.loved.has(t.id) : mine.saved.has(t.id);
-  const table = kind === "love" ? "reactions" : "bookmarks";
-  const set = kind === "love" ? mine.loved : mine.saved;
+  if(!me){ pendingAction = "love"; openAuth(); return; }
+  const key = likeKey(t);
+  const on  = mine.loved.has(key);
 
   if(on){
-    let q = db.from(table).delete()
-      .eq("user_id", me.id).eq("target_id", t.id).eq("target_type", t.type);
-    if(kind === "love") q = q.eq("reaction","love");
-    const { error } = await q;
+    const { error } = await db.from("reactions").delete()
+      .eq("user_id", me.id).eq("target_id", t.id)
+      .eq("target_type", t.type).eq("reaction","love");
     if(error){ toast("Could not remove that"); return; }
-    set.delete(t.id);
-    toast(kind === "love" ? "Love removed" : "Removed from saved");
+    mine.loved.delete(key);
+    likeCounts.set(key, Math.max(0, (likeCounts.get(key) || 1) - 1));
+    toast("Removed from saved");
   } else {
-    const row = { user_id: me.id, target_id: t.id, target_type: t.type };
-    if(kind === "love") row.reaction = "love";
-    const { error } = await db.from(table).insert(row);
+    const { error } = await db.from("reactions").insert({
+      user_id: me.id, target_id: t.id, target_type: t.type, reaction: "love"
+    });
     if(error){ toast("Could not save that"); return; }
-    set.add(t.id);
-    toast(kind === "love" ? "Loved" : "Saved");
+    mine.loved.add(key);
+    likeCounts.set(key, (likeCounts.get(key) || 0) + 1);
+    toast("Saved");
   }
-  paintKeepState();
+  paintLike(el, t);
+  if($("#view-mine").classList.contains("active")) renderMine();
+}
+
+/* who liked this — the count is the door to it */
+async function showWho(t){
+  if(!t) return;
+  const box = $("#who-list");
+  $("#who-sub").textContent = "";
+  box.innerHTML = '<p class="who-empty">Looking…</p>';
+  $("#who-sheet").classList.add("show");
+
+  const { data, error } = await db.from("reaction_people")
+    .select("display_name,avatar_path,created_at")
+    .eq("target_id", t.id).eq("target_type", t.type)
+    .order("created_at", { ascending:false });
+
+  if(error){ box.innerHTML = '<p class="who-empty">Could not load that.</p>'; return; }
+  if(!data || !data.length){
+    box.innerHTML = '<p class="who-empty">Nobody yet. Be the first.</p>'; return;
+  }
+  $("#who-sub").textContent = data.length === 1 ? "1 person" : data.length + " people";
+  box.innerHTML = data.map(r=>{
+    const name = r.display_name || "Someone";
+    const face = r.avatar_path ? `<img src="${r.avatar_path}" alt="">` : initials(name);
+    return `<div class="who-row"><span class="who-face">${face}</span>
+              <span class="who-name">${name}</span></div>`;
+  }).join("");
+}
+
+function wireLike(sel, targetFn){
+  const el = $(sel);
+  if(!el) return;
+  el.querySelector(".lc-heart").addEventListener("click", e=>{
+    e.stopPropagation(); toggleLike(targetFn(), el);
+  });
+  el.querySelector(".lc-count").addEventListener("click", e=>{
+    e.stopPropagation(); showWho(targetFn());
+  });
 }
 
 /* the collection, grouped by the card each code came from */
@@ -4492,9 +4664,7 @@ function everything(){
 }
 
 function renderMine(){
-  const set = mineTab === "loved" ? mine.loved : mine.saved;
-  $("#mine-title").textContent = mineTab === "loved" ? "Loved" : "Saved";
-  $$("[data-mine]").forEach(b=>b.classList.toggle("on", b.dataset.mine === mineTab));
+  const set = mine.loved;
 
   if(!me){
     $("#mine-sub").textContent = "";
@@ -4507,14 +4677,15 @@ function renderMine(){
     return;
   }
 
-  const kept = everything().filter(x=>set.has(x.id));
+  const kept = everything().filter(x=>
+    set.has((x.kind === "code" ? "wisdom_code" : "wisdom_item") + ":" + x.id));
   $("#mine-sub").textContent = kept.length
     ? `${kept.length} ${kept.length===1?"code":"codes"} across ${new Set(kept.map(k=>k.session.session_number)).size} sessions`
     : "";
   if(!kept.length){
     $("#mine-list").innerHTML =
-      `<div class="mine-empty">Nothing here yet. Open a code and tap the
-        ${mineTab === "loved" ? "heart" : "bookmark"} to keep it.</div>`;
+      `<div class="mine-empty">Nothing here yet. Tap the heart on any quote
+        and it gathers here.</div>`;
     return;
   }
 
@@ -4541,13 +4712,13 @@ function renderMine(){
   }));
 }
 
-$$("[data-mine]").forEach(b=>b.addEventListener("click",()=>{
-  mineTab = b.dataset.mine; renderMine();
-}));
-
-/* keep the buttons wired to the account layer */
-$('[data-toggle="wc-love"]').addEventListener("click", ()=>toggleKeep("love"));
-$('[data-toggle="wc-save"]').addEventListener("click", ()=>toggleKeep("save"));
+/* the heart on the quote, and the same heart on the session card */
+wireLike("#wc-like",   currentTarget);
+wireLike("#card-like", sessionTarget);
+$("#who-close").addEventListener("click", ()=>$("#who-sheet").classList.remove("show"));
+$("#who-sheet").addEventListener("click", e=>{
+  if(e.target.id === "who-sheet") $("#who-sheet").classList.remove("show");
+});
 
 /* ---------- the profile circle ----------
    Signed out it is a faint dot that opens sign-in. Signed in it shows
@@ -4692,14 +4863,16 @@ async function refreshAccount(){
   me = data && data.session ? data.session.user : null;
   await loadProfile();
   paintAvatar();
-  await loadMine();
+  await Promise.all([loadMine(), loadCounts()]);
   paintKeepState();
   renderMine();
   if(me){
     closeAuth();
     if(pendingAction){
       const a = pendingAction; pendingAction = null;
-      if(a === "reflect") openReflection(); else toggleKeep(a);
+      if(a === "reflect") openReflection();
+      /* they tapped a heart before signing in — finish the tap for them */
+      else if(a === "love") toggleLike(currentTarget(), $("#wc-like"));
     }
   }
 }
