@@ -769,17 +769,23 @@ body{
 
    The gold is drawn only for the person who liked it. Everyone else
    sees the rose heart and a count that now includes them. */
+/* The corner is sized as a FRACTION OF THE CARD, never in pixels.
+   The frame's gold ornament is painted into the card and scales with
+   it, so a fixed-pixel heart drifts against that ornament on every
+   different screen — 26% of the card on a 320px phone, 19% on a 430px
+   one. That drift is what read as the heart "moving". A percentage
+   keeps the two locked together at any width. */
 .likecorner{
   position:absolute;top:0;right:0;z-index:6;
-  display:flex;flex-direction:column;align-items:flex-end;
-  width:74px;padding-right:17px;pointer-events:none;
+  width:21%;min-width:52px;aspect-ratio:1;
+  pointer-events:none;
 }
 .likecorner > *{pointer-events:auto}
 .lc-heart{
-  background:none;border:0;padding:0;margin:0 -17px 0 0;cursor:pointer;
-  width:74px;height:74px;display:block;line-height:0;
+  position:absolute;inset:0;width:100%;height:100%;
+  background:none;border:0;padding:0;margin:0;cursor:pointer;line-height:0;
 }
-.lc-heart svg{display:block;overflow:visible}
+.lc-heart svg{display:block;width:100%;height:100%;overflow:visible}
 /* the unliked heart is drawn, not filled: an open outline with the
    card showing through it, so it reads as an invitation rather than
    as something already done */
@@ -808,9 +814,10 @@ body{
 /* the number is always there, even at nought — it is the quiet
    evidence that other people have been here */
 .lc-count{
-  background:none;border:0;cursor:pointer;padding:1px 7px 3px;margin-top:-21px;
+  position:absolute;top:60%;right:25.7%;transform:translateX(50%);
+  background:none;border:0;cursor:pointer;padding:1px 6px 3px;
   font-family:var(--body);font-size:12px;font-weight:400;letter-spacing:.03em;
-  color:var(--ink-soft);
+  color:var(--ink-soft);white-space:nowrap;
 }
 .lc-count:hover{color:var(--ink);text-decoration:underline}
 .lc-count:focus-visible{outline:2px solid var(--gold-bright);outline-offset:1px;border-radius:4px}
