@@ -789,15 +789,18 @@ body{
 }
 .likecorner.dark{border-top-right-radius:10px}   /* the cover's radius */
 .likecorner > *{pointer-events:auto}
-/* The button takes its height from the SVG's own aspect ratio rather
-   than from `aspect-ratio`, which iOS Safari does not honour here —
-   that is why the heart rode up over the card's top edge on a phone
-   while measuring correctly in a desktop emulator. */
+/* The box is made square by a percentage padding, which resolves
+   against its own width in every browser. It deliberately does NOT
+   depend on `aspect-ratio` (iOS Safari ignored it here) nor on the
+   SVG's intrinsic height (Safari recomputed that when the paths
+   switched, so the box collapsed the moment you liked something and
+   only a reload put it back). Nothing inside can change this height. */
+.likecorner::before{content:"";display:block;padding-top:100%}
 .lc-heart{
-  display:block;width:100%;
+  position:absolute;inset:0;width:100%;height:100%;
   background:none;border:0;padding:0;margin:0;cursor:pointer;line-height:0;
 }
-.lc-heart svg{display:block;width:100%;height:auto}
+.lc-heart svg{display:block;width:100%;height:100%}
 /* the unliked heart is drawn, not filled: an open outline with the
    card showing through it, so it reads as an invitation rather than
    as something already done */
@@ -808,7 +811,7 @@ body{
   transform-origin:49px 26px;
 }
 .lc-heart:hover .lc-plain{opacity:1;transform:scale(1.09)}
-.lc-wrap{display:none;fill:var(--gold)}
+.lc-wrap{visibility:hidden;fill:var(--gold)}
 /* on the artwork face the outline would otherwise disappear into the
    frame's gold corner ornament, so it is drawn a shade heavier and
    lifted off the picture with a shadow */
@@ -819,9 +822,9 @@ body{
 .likecorner.dark.overleaf .lc-plain{
   stroke-width:1.6;opacity:.92;filter:none;
 }
-.lc-fold{display:none;fill:rgba(122,96,48,.42)}
-.likecorner.on .lc-plain{display:none}
-.likecorner.on .lc-wrap,.likecorner.on .lc-fold{display:block}
+.lc-fold{visibility:hidden;fill:rgba(122,96,48,.42)}
+.likecorner.on .lc-plain{visibility:hidden}
+.likecorner.on .lc-wrap,.likecorner.on .lc-fold{visibility:visible}
 .lc-heart:focus-visible{outline:2px solid var(--gold-bright);outline-offset:-6px;border-radius:8px}
 /* the number is always there, even at nought — it is the quiet
    evidence that other people have been here */
