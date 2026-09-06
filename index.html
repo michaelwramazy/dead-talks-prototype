@@ -4646,8 +4646,12 @@ function paintLike(el, t){
   if(!el) return;
   const key   = t ? likeKey(t) : null;
   const count = el.querySelector(".lc-count");
+  const n = key ? (likeCounts.get(key) || 0) : 0;
   el.classList.toggle("on", !!(key && mine.loved.has(key)));
-  count.textContent = key ? (likeCounts.get(key) || 0) : 0;
+  count.textContent = n;
+  /* nothing has been liked yet, so there is nothing to count and
+     nobody to show — the number appears with the first like */
+  count.hidden = !n;
   el.style.visibility = t ? "visible" : "hidden";
 }
 
@@ -4703,7 +4707,9 @@ async function showWho(t){
   $("#who-sub").textContent = data.length === 1 ? "1 person" : data.length + " people";
   box.innerHTML = data.map(r=>{
     const name = r.display_name || "Someone";
-    const face = r.avatar_path ? `<img src="${r.avatar_path}" alt="">` : initials(name);
+    const face = r.avatar_path
+      ? `<img src="${r.avatar_path}" alt="" referrerpolicy="no-referrer">`
+      : initials(name);
     return `<div class="who-row"><span class="who-face">${face}</span>
               <span class="who-name">${name}</span></div>`;
   }).join("");
@@ -4827,7 +4833,7 @@ function paintAvatar(){
   b.classList.remove("guest");
   const name = (myProfile && myProfile.display_name) || (me.email||"").split("@")[0];
   const pic  = myProfile && myProfile.avatar_path;
-  b.innerHTML = pic ? `<img src="${pic}" alt="">` : initials(name);
+  b.innerHTML = pic ? `<img src="${pic}" alt="" referrerpolicy="no-referrer">` : initials(name);
   b.setAttribute("aria-label", "Your profile, " + name);
 }
 
@@ -4837,6 +4843,32 @@ async function loadProfile(){
   const { data } = await db.from("profiles")
     .select("display_name,avatar_path,about").eq("id", me.id).maybeSingle();
   myProfile = data || null;
+  await adoptFromProvider();
+}
+
+/* Someone who signs in with Google already has a name and a picture
+   there, so there is no reason to make them set it again. Google hands
+   both to us in the session.
+
+   This only ever FILLS A GAP. A picture someone uploaded here, or a
+   name they typed, is never overwritten — the email-prefix default the
+   signup trigger writes is treated as "not chosen yet", because that is
+   what it is. */
+async function adoptFromProvider(){
+  if(!me || !myProfile) return;
+  const m    = me.user_metadata || {};
+  const pic  = m.avatar_url || m.picture   || null;
+  const name = m.full_name  || m.name      || null;
+  const stub = (me.email || "").split("@")[0];
+
+  const patch = {};
+  if(pic  && !myProfile.avatar_path) patch.avatar_path = pic;
+  if(name && (!myProfile.display_name || myProfile.display_name === stub))
+    patch.display_name = name;
+  if(!Object.keys(patch).length) return;
+
+  const { error } = await db.from("profiles").update(patch).eq("id", me.id);
+  if(!error) Object.assign(myProfile, patch);
 }
 
 function openProfile(){
@@ -4931,7 +4963,7 @@ function paintAvatarPreview(){
   const el = $("#avatar-preview");
   const pic = myProfile && myProfile.avatar_path;
   const name = (myProfile && myProfile.display_name) || (me && me.email ? me.email.split("@")[0] : "");
-  el.innerHTML = pic ? `<img src="${pic}" alt="">` : initials(name);
+  el.innerHTML = pic ? `<img src="${pic}" alt="" referrerpolicy="no-referrer">` : initials(name);
 }
 
 $("#profile-signout").addEventListener("click", async ()=>{
