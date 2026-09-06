@@ -844,6 +844,57 @@ body{
 .likecorner.dark.overleaf .lc-count{color:var(--ink-soft);text-shadow:none}
 .likecorner.dark.overleaf .lc-count:hover{color:var(--ink)}
 
+/* ---------- administrator ---------- */
+.role-badge{
+  display:inline-block;margin:0 auto 14px;padding:4px 13px;border-radius:999px;
+  background:rgba(212,169,78,.14);border:1px solid var(--gold);
+  color:var(--gold-bright);font-size:10.5px;letter-spacing:.19em;
+  text-transform:uppercase;text-align:center;
+}
+.role-badge[hidden]{display:none}
+.admin-link{
+  width:100%;margin:0 0 16px;padding:11px;border-radius:7px;cursor:pointer;
+  background:rgba(212,169,78,.1);border:1px solid rgba(212,169,78,.45);
+  color:var(--gold-bright);font-family:var(--body);font-size:13px;
+}
+.admin-link:hover{border-color:var(--gold-bright);background:rgba(212,169,78,.16)}
+.admin-link[hidden]{display:none}
+
+.inv{
+  position:relative;
+  background:rgba(255,255,255,.035);border:1px solid rgba(212,169,78,.2);
+  border-radius:10px;padding:14px 15px 13px;margin-bottom:12px;
+}
+/* the status sits out of the flow so a long title cannot run into it */
+.inv-head{display:flex;align-items:baseline;gap:9px;margin-bottom:3px;padding-right:62px}
+.inv-num{
+  font-family:var(--body);font-size:11px;letter-spacing:.14em;color:var(--gold);
+  border:1px solid rgba(212,169,78,.4);border-radius:4px;padding:1px 6px;flex:0 0 auto;
+}
+.inv-title{
+  font-family:var(--display);font-size:17px;font-weight:500;
+  color:var(--parchment);line-height:1.25;
+}
+.inv-date{font-size:11px;color:rgba(239,223,192,.5);margin:0 0 11px}
+.inv-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{
+  font-size:10.5px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;
+  border:1px solid transparent;white-space:nowrap;
+}
+.chip.have{background:rgba(111,168,114,.14);border-color:rgba(111,168,114,.5);color:#9ed3a1}
+.chip.miss{background:rgba(180,96,127,.13);border-color:rgba(180,96,127,.5);color:#e29ab6}
+.inv-out{
+  font-size:12px;line-height:1.5;color:rgba(239,223,192,.72);
+  border-top:1px solid rgba(212,169,78,.16);padding-top:9px;
+}
+.inv-out b{color:var(--gold-bright);font-weight:400}
+.inv-ok{color:#9ed3a1}
+.inv-status{
+  position:absolute;top:15px;right:15px;
+  font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:rgba(239,223,192,.45);
+}
+
 /* who liked this */
 .who-row{
   display:flex;align-items:center;gap:11px;padding:8px 2px;
@@ -1133,6 +1184,22 @@ body{
       <div id="mine-list"></div>
     </section>
 
+    <!-- ==== ADMINISTRATOR: THE INVENTORY ============ -->
+    <section class="view" id="view-admin">
+      <div class="topbar">
+        <button class="roundbtn" data-go="home" aria-label="Back to home">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 6 9 12l6 6"/></svg>
+        </button>
+        <div class="eyebrow" style="padding:0">Administrator</div>
+        <div style="width:38px"></div>
+      </div>
+      <div class="mine-head">
+        <h2>Session inventory</h2>
+        <p id="admin-sub">Every card, and what each one is still missing.</p>
+      </div>
+      <div id="admin-list"></div>
+    </section>
+
     <!-- ==== LIBRARY (the spread) ============ -->
     <section class="view" id="view-library">
       <div class="library-head">
@@ -1233,6 +1300,8 @@ body{
     <div class="sheet-inner">
       <h3>Your profile</h3>
       <p class="who" id="profile-who"></p>
+      <div class="role-badge" id="profile-role" hidden></div>
+      <button class="admin-link" id="profile-admin" hidden>Session inventory</button>
 
       <div class="avatar-pick">
         <span class="preview" id="avatar-preview">·</span>
@@ -4893,6 +4962,116 @@ async function adoptFromProvider(){
   if(!error) Object.assign(myProfile, patch);
 }
 
+/* ---------- administrator ----------
+   The role model was in the database from the start: an app_role enum
+   with visitor / member / editor / publisher / moderator /
+   administrator, a user_roles table, and RLS policies that already let
+   an editor or administrator write sessions, songs and media. Nothing
+   here grants anything — it only asks what the database already knows,
+   and shows the tools to whoever it says.
+
+   user_roles has a read policy of "your own row, or you are an
+   administrator", so this reads only what belongs to the person. */
+let myRoles = [];
+
+async function loadRoles(){
+  myRoles = [];
+  if(!me) return;
+  const { data } = await db.from("user_roles").select("role").eq("user_id", me.id);
+  myRoles = (data || []).map(r => r.role);
+}
+
+const isAdmin  = () => myRoles.includes("administrator");
+const canEdit  = () => isAdmin() || myRoles.includes("editor") || myRoles.includes("publisher");
+const roleName = () => isAdmin() ? "Administrator"
+                     : myRoles.includes("editor") ? "Editor"
+                     : myRoles.includes("publisher") ? "Publisher" : null;
+
+function paintRole(){
+  const badge = $("#profile-role"), link = $("#profile-admin");
+  const name = roleName();
+  badge.textContent = name || "";
+  badge.hidden = !name;
+  link.hidden = !canEdit();
+}
+
+/* The inventory reads the DATABASE, not the built payload. The payload
+   is a snapshot taken at build time, and the whole point of this page
+   is to show what has changed since. */
+async function renderAdmin(){
+  const box = $("#admin-list");
+  if(!canEdit()){
+    box.innerHTML = `<div class="mine-empty">This page is for administrators.</div>`;
+    return;
+  }
+  box.innerHTML = `<div class="mine-empty">Reading the database…</div>`;
+
+  const [cards, songs, codes] = await Promise.all([
+    db.from("session_cards").select("*").order("session_number"),
+    db.from("session_songs").select("session_id,title,url,audio_path"),
+    db.from("wisdom_codes").select("session_id,publication_status")
+  ]);
+
+  if(cards.error){
+    box.innerHTML = `<div class="mine-empty">Could not read the sessions.<br>
+      <span style="font-size:11px;opacity:.7">${cards.error.message}</span></div>`;
+    return;
+  }
+
+  const songsBy = {}, codesBy = {};
+  (songs.data || []).forEach(g => (songsBy[g.session_id] = songsBy[g.session_id] || []).push(g));
+  (codes.data || []).forEach(c => {
+    codesBy[c.session_id] = codesBy[c.session_id] || { all:0, live:0 };
+    codesBy[c.session_id].all++;
+    if(c.publication_status === "published") codesBy[c.session_id].live++;
+  });
+
+  const rows = (cards.data || []).map(s => {
+    const g = songsBy[s.id] || [];
+    const c = codesBy[s.id] || { all:0, live:0 };
+    const have = [
+      ["Artwork",   !!s.artwork_path],
+      ["Summary",   !!(s.standfirst && s.standfirst.trim())],
+      ["Listen",    !!(s.podcast_url || s.podcast_audio_url)],
+      ["Song",      g.length > 0],
+      ["Journey",   !!s.journey_path],
+      ["Codes",     c.live > 0]
+    ];
+    const missing = have.filter(h => !h[1]).map(h => h[0]);
+    return { s, g, c, have, missing };
+  });
+
+  const clean = rows.filter(r => !r.missing.length).length;
+  $("#admin-sub").textContent =
+    `${rows.length} ${rows.length === 1 ? "session" : "sessions"} · `
+    + (clean === rows.length ? "nothing outstanding"
+       : `${rows.length - clean} still ${rows.length - clean === 1 ? "needs" : "need"} something`);
+
+  box.innerHTML = rows.map(({s, g, c, have, missing}) => `
+    <div class="inv">
+      <span class="inv-status">${s.publication_status || ""}</span>
+      <div class="inv-head">
+        <span class="inv-num">${String(s.session_number).padStart(3,"0")}</span>
+        <span class="inv-title">${s.title || "Untitled"}</span>
+      </div>
+      <p class="inv-date">${s.session_date ? prettyDate(s.session_date) : "no date"}${
+        g.length > 1 ? ` · ${g.length} songs` : ""}${
+        c.all ? ` · ${c.live}/${c.all} codes published` : ""}</p>
+      <div class="inv-grid">
+        ${have.map(h => `<span class="chip ${h[1] ? "have" : "miss"}">${h[1] ? "✓" : "✕"} ${h[0]}</span>`).join("")}
+      </div>
+      <p class="inv-out">${
+        missing.length
+          ? `<b>Outstanding:</b> ${missing.join(", ").toLowerCase()}`
+          : `<span class="inv-ok">Complete — nothing outstanding.</span>`
+      }</p>
+    </div>`).join("");
+}
+
+$("#profile-admin").addEventListener("click", ()=>{
+  closeProfile(); show("admin"); renderAdmin();
+});
+
 function openProfile(){
   if(!me){ openAuth(); return; }
   closeAuth();
@@ -5000,7 +5179,8 @@ async function refreshAccount(){
   me = data && data.session ? data.session.user : null;
   await loadProfile();
   paintAvatar();
-  await Promise.all([loadMine(), loadCounts()]);
+  await Promise.all([loadMine(), loadCounts(), loadRoles()]);
+  paintRole();
   paintKeepState();
   renderMine();
   if(me){
