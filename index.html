@@ -777,15 +777,27 @@ body{
    keeps the two locked together at any width. */
 .likecorner{
   position:absolute;top:0;right:0;z-index:6;
-  width:21%;min-width:52px;aspect-ratio:1;
+  width:21%;min-width:52px;
   pointer-events:none;
+  /* the wrap is clipped to the card's own corner radius rather than
+     carrying its own rounded corner in the SVG. A radius drawn inside
+     a scaling viewBox scales with it, while the card's border-radius
+     is fixed, so the two could never agree — the gold overhung the
+     corner on a wide card and fell short on a narrow one. */
+  overflow:hidden;
+  border-top-right-radius:16px;
 }
+.likecorner.dark{border-top-right-radius:10px}   /* the cover's radius */
 .likecorner > *{pointer-events:auto}
+/* The button takes its height from the SVG's own aspect ratio rather
+   than from `aspect-ratio`, which iOS Safari does not honour here —
+   that is why the heart rode up over the card's top edge on a phone
+   while measuring correctly in a desktop emulator. */
 .lc-heart{
-  position:absolute;inset:0;width:100%;height:100%;
+  display:block;width:100%;
   background:none;border:0;padding:0;margin:0;cursor:pointer;line-height:0;
 }
-.lc-heart svg{display:block;width:100%;height:100%;overflow:visible}
+.lc-heart svg{display:block;width:100%;height:auto}
 /* the unliked heart is drawn, not filled: an open outline with the
    card showing through it, so it reads as an invitation rather than
    as something already done */
@@ -975,7 +987,7 @@ body{
                   <path transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z" fill="#000"/>
                 </mask>
               </defs>
-              <path class="lc-wrap" d="M10 0 L64 0 A10 10 0 0 1 74 10 L74 64 Z" mask="url(#lcknock-card-like)"/>
+              <path class="lc-wrap" d="M10 0 L74 0 L74 64 Z" mask="url(#lcknock-card-like)"/>
               <path class="lc-fold" d="M10 0 L14 0 L74 60 L74 64 Z"/>
               <path class="lc-plain" transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/>
             </svg>
@@ -1061,7 +1073,7 @@ body{
                   <path transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z" fill="#000"/>
                 </mask>
               </defs>
-              <path class="lc-wrap" d="M10 0 L58 0 A16 16 0 0 1 74 16 L74 64 Z" mask="url(#lcknock-wc-like)"/>
+              <path class="lc-wrap" d="M10 0 L74 0 L74 64 Z" mask="url(#lcknock-wc-like)"/>
               <path class="lc-fold" d="M10 0 L14 0 L74 60 L74 64 Z"/>
               <path class="lc-plain" transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/>
             </svg>
