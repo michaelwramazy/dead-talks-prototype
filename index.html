@@ -585,42 +585,59 @@ body{
 .spread{
   position:relative;display:flex;flex-direction:column;align-items:center;
   padding-bottom:18px;
-  /* how much of each card shows above the next one; renderLibrary sets it
-     from the deck size, so a big deck sits tight like a real stack */
+  /* the newest card lies whole on top of the pile; every older card is
+     tucked underneath it and shows only its bottom strip, where the date
+     and name sit. renderLibrary sets --peek from the deck size, so a big
+     deck sits tight like a real stack (never under 15%) */
   --peek:57%;
 }
 .spread-card{
   position:relative;width:66%;aspect-ratio:1024/1792;
-  /* card height is 66% × 1792/1024 = 115.5% of the column width */
-  margin-bottom:calc(var(--peek) - 115.5%);
   border-radius:10px;overflow:hidden;cursor:pointer;padding:0;border:0;
-  box-shadow:0 18px 40px rgba(0,0,0,.55);
-  transition:transform .42s cubic-bezier(.2,.75,.3,1), margin-bottom .42s cubic-bezier(.2,.75,.3,1);
-  transform-origin:50% 100%;
+  /* the shadow falls downward onto the card beneath, so each edge reads */
+  box-shadow:0 8px 18px rgba(0,0,0,.75), 0 1px 0 rgba(212,169,78,.35);
+  transition:transform .38s cubic-bezier(.2,.75,.3,1);
+  transform-origin:50% 0;
+  -webkit-tap-highlight-color:transparent;
 }
-.spread-card:last-child{margin-bottom:0}
+/* card height is 66% × 1792/1024 = 115.5% of the column width: pull each
+   card up under the one before it, leaving --peek showing */
+.spread-card + .spread-card{margin-top:calc(var(--peek) - 115.5%)}
 .spread-card .sc-art{position:absolute;inset:0;background-size:cover;background-position:50% 20%}
 .spread-card .sc-frame{
   position:absolute;inset:0;border-radius:10px;
-  border:1px solid rgba(212,169,78,.55);
+  border:1.5px solid rgba(212,169,78,.8);
   box-shadow:inset 0 0 0 4px rgba(11,18,41,.55),inset 0 0 30px rgba(0,0,0,.55);
 }
-/* the name sits on the exposed top edge, since the cards overlap */
+/* the name sits on the bottom edge, the part that stays visible */
 .spread-card .sc-label{
-  position:absolute;left:0;right:0;top:0;padding:12px 14px 30px;
-  background:linear-gradient(to bottom,rgba(8,14,34,.93),transparent);
+  position:absolute;left:0;right:0;bottom:0;padding:34px 44px 13px 14px;
+  background:linear-gradient(to top,rgba(8,14,34,.92) 50%,transparent);
+  border-top:1px solid rgba(212,169,78,.22);
   font-family:var(--display);font-size:14.5px;color:var(--parchment);text-align:left;
 }
 .spread-card .sc-num{
   display:block;font-family:var(--body);font-size:9.5px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--gold);margin-bottom:2px;font-weight:400;
 }
+/* a heart on the cards you have liked */
+.spread-card .sc-fav{
+  position:absolute;right:12px;bottom:12px;width:21px;height:21px;color:var(--rose);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));
+}
+.spread-card .sc-fav svg{display:block;width:100%;height:100%}
 .spread-card:hover,.spread-card:focus-visible{
-  transform:translateY(-16px) rotate(-.6deg);outline:none;
+  transform:translateY(-10px);outline:none;
 }
 .spread-card:hover .sc-frame,.spread-card:focus-visible .sc-frame{
   border-color:var(--gold-bright);
 }
+/* the tapped card slides out of the pile before it opens */
+.spread-card.drawing{
+  transform:translateY(-28px) scale(1.035);z-index:200!important;
+  box-shadow:0 24px 50px rgba(0,0,0,.7);
+}
+.spread-card.drawing .sc-frame{border-color:var(--gold-bright)}
 @media (prefers-reduced-motion:reduce){
   .spread-card{transition:none}
 }
@@ -3898,9 +3915,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-barbara-ann-brennan/id1707752987?i=1000673845335",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/iu2292797gaqwy2g/DT_Barbara_Ann_Brennan_Podcast_a0r3o.mp3",
+    "podcast_seconds": 3093,
     "songs": [],
     "artwork_path": "covers/session-005.jpg",
     "artwork_alt": "Card artwork for Joy as a Guide: portraits of Barbara Ann Brennan",
@@ -4082,9 +4099,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-anna-freud-the-ego-education-and-dna/id1707752987?i=1000699439446",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/wffrbykrixr8te9g/DT_Anna_Freud_Podcast69f5s.mp3",
+    "podcast_seconds": 2845,
     "songs": [],
     "artwork_path": "covers/session-006.jpg",
     "artwork_alt": "Card artwork for The Ego, Gateway to Integration and Authentic Living: portraits of Anna Freud",
@@ -4282,9 +4299,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-mirra-alfassa-and-sri-aurobindo-activations/id1707752987?i=1000703292577",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/xum9utpfpc6d9y95/AUL_Mirra_Alfassa_and_Sri_Aurobindo_podcast7ssp8.mp3",
+    "podcast_seconds": 2241,
     "songs": [],
     "artwork_path": "covers/session-007.jpg",
     "artwork_alt": "Card artwork for Whispers from Beyond, the Divine Integration of Spirit and Matter: portraits of Sri Aurobindo and Mirra Alfassa",
@@ -4552,9 +4569,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-aldous-huxley-houston-smith/id1707752987?i=1000704202741",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/8g4mwf3igd85fp3k/DT_Audus_Huxley_podcast80nuk.mp3",
+    "podcast_seconds": 2636,
     "songs": [],
     "artwork_path": "covers/session-008.jpg",
     "artwork_alt": "Card artwork for Keepers of the Flame: portraits of Aldous Huxley and Huston Smith",
@@ -5654,9 +5671,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-galileo-and-hildegard-of-bingen/id1707752987?i=1000708820397",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/n2yi3impb7rxg5gb/DT_Galileo_and_Hildegard_podcast8kn3h.mp3",
+    "podcast_seconds": 2647,
     "songs": [],
     "artwork_path": "covers/session-009.jpg",
     "artwork_alt": "Card artwork for Bridging Heaven and Earth: portraits of Hildegard of Bingen and Galileo Galilei",
@@ -6124,9 +6141,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-carl-jung-and-antoni-gaudi/id1707752987?i=1000708003984",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/a4gkhx77vhkqzng5/DT_Jung_Gaudi_Podcast9umwk.mp3",
+    "podcast_seconds": 2513,
     "songs": [],
     "artwork_path": "covers/session-010.jpg",
     "artwork_alt": "Card artwork for Divine Architecture: portraits of Antoni Gaudí and Carl Jung",
@@ -7418,9 +7435,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-alan-turing-hulma-klint/id1707752987?i=1000709747364",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/jc4qrveu599e49m9/DT_Alan_Turing_and_Hilma_Klint_podcast71xc6.mp3",
+    "podcast_seconds": 2522,
     "songs": [],
     "artwork_path": "covers/session-011.jpg",
     "artwork_alt": "Card artwork for The Bridge Between Ages: portraits of Alan Turing and Hilma af Klint",
@@ -8534,9 +8551,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-leonardo-davinci-and-carl-sagan/id1707752987?i=1000714044310",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/4kduk5attai9jyjj/DT_Davinci_Sagan_podcast9uhz2.mp3",
+    "podcast_seconds": 3065,
     "songs": [],
     "artwork_path": "covers/session-013.jpg",
     "artwork_alt": "Card artwork for Observatory of Possibility: portraits of Leonardo da Vinci and Carl Sagan",
@@ -9842,9 +9859,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-walt-whitman-and-simone-weil/id1707752987?i=1000719399454",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/6xvu7w5bayvh2pak/DT_Walt_Whitman_Simone_Weil_podcast8nujh.mp3",
+    "podcast_seconds": 2817,
     "songs": [],
     "artwork_path": "covers/session-015.jpg",
     "artwork_alt": "Card artwork for Truth Through Suffering and Joy: portraits of Simone Weil and Walt Whitman",
@@ -10344,9 +10361,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-king-akhenaten-and-ursula-leguin/id1707752987?i=1000720410760",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/ewuqtr3umbv3pjxk/DT_Akhenaten_LeGuin_podcasta07ti.mp3",
+    "podcast_seconds": 3040,
     "songs": [],
     "artwork_path": "covers/session-016.jpg",
     "artwork_alt": "Card artwork for You Are the Temple: portraits of Akhenaten and Ursula K. Le Guin",
@@ -10980,9 +10997,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-anthony-bourdain-and-oscar-wilde/id1707752987?i=1000725570577",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/3yqd5qkx6x9jeqtu/DT_Bourdain_Wilde_podcast7pfo7.mp3",
+    "podcast_seconds": 2863,
     "songs": [],
     "artwork_path": "covers/session-018.jpg",
     "artwork_alt": "Card artwork for Samosas and Slackers: portraits of Oscar Wilde and Anthony Bourdain",
@@ -11434,9 +11451,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/all-about-time-virginia-woolf-and-salvador-dali/id1707752987?i=1000728226647",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/ami4fwryf88pn5cq/DT_Dali_Woolf_podcast6et3q.mp3",
+    "podcast_seconds": 2869,
     "songs": [],
     "artwork_path": "covers/session-019.jpg",
     "artwork_alt": "Card artwork for Time Is a Tide: portraits of Virginia Woolf and Salvador Dalí",
@@ -11736,9 +11753,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/charlie-chaplin-mark-twain-laughter-and-sorrow/id1707752987?i=1000729150020",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/6wuzwwbccwivns7x/DT_Chaplin_Twain_podcast6srtm.mp3",
+    "podcast_seconds": 2927,
     "songs": [],
     "artwork_path": "covers/session-020.jpg",
     "artwork_alt": "Card artwork for The Paradox of Play and Seriousness: portraits of Mark Twain and Charlie Chaplin",
@@ -12014,9 +12031,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-marlene-dietrich-josephine-baker-authenticity/id1707752987?i=1000730206980",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/2mhdnr6g2r6qd9ce/DT_Deitrich_Baker_Podcast7bwf1.mp3",
+    "podcast_seconds": 2792,
     "songs": [],
     "artwork_path": "covers/session-021.jpg",
     "artwork_alt": "Card artwork for Masks & Authenticity: portraits of Josephine Baker and Marlene Dietrich",
@@ -12356,9 +12373,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-the-art-of-surrender-georgia-okeeffe-and-tao-tzu/id1707752987?i=1000731451385",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/igh79wr6vijnx4j3/DT_Lao_Tzu_Georgia_Okeeffe_podcast8gx4o.mp3",
+    "podcast_seconds": 3025,
     "songs": [],
     "artwork_path": "covers/session-022.jpg",
     "artwork_alt": "Card artwork for Surrender and the Way: portraits of Georgia O'Keeffe and Lao Tzu",
@@ -12834,9 +12851,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/question-everything-socrates-and-maya-deren/id1707752987?i=1000732576615",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/pi4ns8r83ytfuujt/DT_Socrates_Maya_Deren_podcast926ov.mp3",
+    "podcast_seconds": 3078,
     "songs": [],
     "artwork_path": "covers/session-023.jpg",
     "artwork_alt": "Card artwork for The Infinite Mirror: portraits of Socrates and Maya Deren",
@@ -13104,9 +13121,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/freedom-rebellion-in-grace-joan-of-arc-and-james-baldwin/id1707752987?i=1000735958324",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/fg6mq4i46dnmbjya/Dead_Talk_Joan_of_Arc_James_Baldwin_Podcast7p4sn.mp3",
+    "podcast_seconds": 2829,
     "songs": [],
     "artwork_path": "covers/session-024.jpg",
     "artwork_alt": "Card artwork for Rebellion as Grace: portraits of Joan of Arc and James Baldwin",
@@ -13462,9 +13479,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/the-dual-perception-method-with-mary-oliver-and-audre-lorde/id1707752987?i=1000737789225",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/xey4xpcqxnsqmmdq/DT_Perception_Mary_Oliver_Audre_Lorde_audio_edit73s2b.mp3",
+    "podcast_seconds": 2313,
     "songs": [],
     "artwork_path": "covers/session-025.jpg",
     "artwork_alt": "Card artwork for Dual Perception, the Ritual of Seeing: portraits of Mary Oliver and Audre Lorde",
@@ -13692,9 +13709,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-rebellion-and-order-marcus-aurelius/id1707752987?i=1000739132283",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/rfkdiw4igsbbwp2x/DT_Marcus_Arelius_Hereward_podcast7j6s4.mp3",
+    "podcast_seconds": 2799,
     "songs": [],
     "artwork_path": "covers/session-026.jpg",
     "artwork_alt": "Card artwork for The Dance of Rebellion and Order: portraits of Hereward the Wake and Marcus Aurelius",
@@ -14098,9 +14115,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-queen-nefertiti-and-viktor-frankl-sovereignty/id1707752987?i=1000741227691",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/mwyvvftiizuynthg/DT_Nefertiti_Frankl_podcastbqrxd.mp3",
+    "podcast_seconds": 2454,
     "songs": [],
     "artwork_path": "covers/session-027.jpg",
     "artwork_alt": "Card artwork for Sovereignty, Meaning and Presence: portraits of Nefertiti and Viktor Frankl",
@@ -14670,9 +14687,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-how-money-and-abundance-works-with/id1707752987?i=1000743417659",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/b7eemevbvrw7ttxx/DT_Friedman_Hahn_podcast9rgwp.mp3",
+    "podcast_seconds": 3312,
     "songs": [],
     "artwork_path": "covers/session-029.jpg",
     "artwork_alt": "Card artwork for The Illusion of Separation: portraits of Thich Nhat Hanh and Milton Friedman",
@@ -15274,9 +15291,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/inner-freedom-after-trauma-with-etty-hillesum-and/id1707752987?i=1000747465398",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/9qv5eh8gzqxfdea2/DT_Etty_Vaclav_Podcastbppvx.mp3",
+    "podcast_seconds": 3537,
     "songs": [],
     "artwork_path": "covers/session-031.jpg",
     "artwork_alt": "Card artwork for Freedom After Trauma: portraits of Etty Hillesum and Václav Havel",
@@ -15536,9 +15553,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/living-without-waiting-eileen-caddy-and-albert-camus/id1707752987?i=1000790823490",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/dace6jb7wsyaia42/DT_Caddy_Camus_podcast8s68a.mp3",
+    "podcast_seconds": 3789,
     "songs": [],
     "artwork_path": "covers/session-032.jpg",
     "artwork_alt": "Card artwork for Living Without Waiting: portraits of Eileen Caddy and Albert Camus",
@@ -16388,9 +16405,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/dead-talk-fred-rogers-and-julian-or-norwich/id1707752987?i=1000754078508",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/t8khz7k3kbpavsk7/DT_Retreat_Fred_Rogers_Julian_of_Norwich_podcast872z0.mp3",
+    "podcast_seconds": 2580,
     "songs": [],
     "artwork_path": "covers/session-034.jpg",
     "artwork_alt": "Card artwork for Love That Never Waits: portraits of Fred Rogers and Julian of Norwich",
@@ -17464,9 +17481,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/moving-forward-without-guarantees-rachel-carson-and/id1707752987?i=1000786675985",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/i3n9nkx7nmuguv4d/DT_Rachel_Carlson_Wnagari_Maathai_Podcast8ujzi.mp3",
+    "podcast_seconds": 3199,
     "songs": [],
     "artwork_path": "covers/session-036.jpg",
     "artwork_alt": "Card artwork for Walking Forward Without Guarantees: portraits of Rachel Carson and Wangari Maathai",
@@ -18614,9 +18631,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/friedrich-nietzsche-and-ren%C3%A9-magritte-your-reality/id1707752987?i=1000763837258",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/yscizde6y6kqzqfe/DT_Nietzche_Magritte_podcast7wmrb.mp3",
+    "podcast_seconds": 3517,
     "songs": [],
     "artwork_path": "covers/session-037.jpg",
     "artwork_alt": "Card artwork for Meaning, the Beautiful Lie We Create: portraits of René Magritte and Friedrich Nietzsche",
@@ -19124,9 +19141,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/groucho-marx-and-douglas-adams-dont-panic-its-all-a-joke/id1707752987?i=1000765792204",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/aw3e4a2nn5fxawzt/DT_Groucho_Douglas_Adams_Podcast7swj5.mp3",
+    "podcast_seconds": 3174,
     "songs": [],
     "artwork_path": "covers/session-038.jpg",
     "artwork_alt": "Card artwork for The Cosmic Joke, When Seriousness Becomes Optional: portraits of Douglas Adams and Groucho Marx",
@@ -19586,9 +19603,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/what-the-child-still-knows-jim-henson-and-antoine/id1707752987?i=1000772563819",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/wg4ny9m5g3n3kysr/DT_Jim_Henson_Saint_X_Podcastamvmh.mp3",
+    "podcast_seconds": 3188,
     "songs": [],
     "artwork_path": "covers/session-039.jpg",
     "artwork_alt": "Card artwork for What the Child Still Knows: portraits of Antoine de Saint-Exupéry and Jim Henson",
@@ -20976,9 +20993,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/decoding-the-symbolic-nature-of-the-universe/id1707752987?i=1000769214214",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/tfr89fdsfnd94gt7/DT_William_Blake_Jorge_Borges_Podcastalfki.mp3",
+    "podcast_seconds": 3391,
     "songs": [],
     "artwork_path": "covers/session-040.jpg",
     "artwork_alt": "Card artwork for The Symbolic Architecture of Reality: portraits of William Blake and Jorge Luis Borges",
@@ -21806,9 +21823,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/jane-roberts-and-david-bohm-reality-is-always/id1707752987?i=1000770437627",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/3k22w2xue9tw9z76/DT_Jane_Roberts_David_Bohm_podcast94p8y.mp3",
+    "podcast_seconds": 4288,
     "songs": [],
     "artwork_path": "covers/session-041.jpg",
     "artwork_alt": "Card artwork for Participation & the Implicate Order: portraits of Jane Roberts and David Bohm",
@@ -22866,9 +22883,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/terence-mckenna-and-aleister-crowley-reality-is-not/id1707752987?i=1000773605808",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/ijxzecnnu8etmzfc/DT_McKenna_Crowley_podcast6g0sx.mp3",
+    "podcast_seconds": 3255,
     "songs": [],
     "artwork_path": "covers/session-043.jpg",
     "artwork_alt": "Card artwork for The Dance of Consciousness: portraits of Terence McKenna and Aleister Crowley",
@@ -25622,9 +25639,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/becoming-no-one-freedom-beyond-identity-simone-de/id1707752987?i=1000774842414",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/um95vwda7t7guh3r/DT_Nisargadatta_Beauvoir_podcast858am.mp3",
+    "podcast_seconds": 3335,
     "songs": [],
     "artwork_path": "covers/session-045.jpg",
     "artwork_alt": "Card artwork for Becoming Nobody: portraits of Simone de Beauvoir and Sri Nisargadatta Maharaj",
@@ -26476,9 +26493,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/life-is-just-a-game-richard-feynman-and-p-g-wodehouse/id1707752987?i=1000776264586",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/dyuhh7kwt58mw5fb/DT_Feynman_Wodehouse_podcast678ck.mp3",
+    "podcast_seconds": 3121,
     "songs": [],
     "artwork_path": "covers/session-046.jpg",
     "artwork_alt": "Card artwork for Life as a Cosmic Game: portraits of Richard Feynman and P.G. Wodehouse",
@@ -26914,9 +26931,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/jorge-luis-borges-and-henri-bergson-time-perspective/id1707752987?i=1000778218187",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/vpzbsdq7i4mwsm2r/DT_Bergson_Borges_Podcastbdu9s.mp3",
+    "podcast_seconds": 3988,
     "songs": [],
     "artwork_path": "covers/session-047.jpg",
     "artwork_alt": "Card artwork for The Library of Living Time: portraits of Henri Bergson and Jorge Luis Borges",
@@ -27528,9 +27545,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/your-future-is-calling-herman-hesse-and-st-teresa-of-%C3%A1vila/id1707752987?i=1000777350671",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/kezayys4ta3ubnyx/DT_Hesse_Teresa_of_Avila_podcast7byt1.mp3",
+    "podcast_seconds": 3878,
     "songs": [],
     "artwork_path": "covers/session-048.jpg",
     "artwork_alt": "Card artwork for The Life That Calls You Forward: portraits of Hermann Hesse and Teresa of Ávila",
@@ -28030,9 +28047,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/the-identity-is-afraid-the-essence-is-not-henri/id1707752987?i=1000788147750",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/53ipnjicyxjx6r9r/DT_Tagore_Nouwen_podcastbttyc.mp3",
+    "podcast_seconds": 3232,
     "songs": [],
     "artwork_path": "covers/session-049.jpg",
     "artwork_alt": "Card artwork for Remembering Your Light: portraits of Rabindranath Tagore and Henri Nouwen",
@@ -29256,9 +29273,9 @@ const SESSIONS = [
     "listen_path": null,
     "journey_path": null,
     "song_path": null,
-    "podcast_url": null,
-    "podcast_audio_url": null,
-    "podcast_seconds": null,
+    "podcast_url": "https://podcasts.apple.com/ca/podcast/the-life-you-havent-lived-yet-julia-child-and-samuel-beckett/id1707752987?i=1000789209795",
+    "podcast_audio_url": "https://mcdn.podbean.com/mf/web/56jbv29wtpcnnnsi/DT_Child_Beckett_Podcast7la8v.mp3",
+    "podcast_seconds": 3073,
     "songs": [],
     "artwork_path": "covers/session-052.jpg",
     "artwork_alt": "Card artwork for The Life You Haven't Lived Yet: portraits of Julia Child and Samuel Beckett",
@@ -30912,14 +30929,16 @@ async function paintReflection(){
 }
 
 function renderLibrary(){
-  // a few cards fan loosely; a full deck stacks tight, each card showing
-  // just the strip that carries its date and name (never less than 15%)
+  // a few cards fan loosely; a full deck stacks tight, each older card
+  // showing just the strip that carries its date and name (never less than 15%)
   const peek = Math.max(15, Math.min(57, 230 / SESSIONS.length));
   $("#spread").style.setProperty("--peek", peek + "%");
-  // newest session on top of the stack, the oldest at the bottom
-  const deck = [...SESSIONS].sort((a,b)=>(b.session_date||"").localeCompare(a.session_date||""));
-  $("#spread").innerHTML = deck.map(s=>`
-    <button class="spread-card" data-draw="${s.session_number}"
+  // newest session on top of the pile, the oldest at the bottom; the
+  // first card in the flow is drawn above the ones after it
+  const pile = [...SESSIONS].sort((a,b)=>(b.session_date||"").localeCompare(a.session_date||""));
+  const loved = (typeof mine !== "undefined" && mine && mine.loved) ? mine.loved : new Set();
+  $("#spread").innerHTML = pile.map((s,i)=>`
+    <button class="spread-card" data-draw="${s.session_number}" style="z-index:${pile.length-i}"
             aria-label="${s.title}">
       <span class="sc-art" style="background-image:url('${s.artwork_path}')"></span>
       <span class="sc-frame"></span>
@@ -30927,10 +30946,17 @@ function renderLibrary(){
         <span class="sc-num">${prettyDate(s.session_date)}</span>
         ${tileLabel(s.title)}
       </span>
+      ${s.id && loved.has("session:"+s.id) ? `<span class="sc-fav" aria-label="One of your favourites"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.1C1 8.6 3 5.5 6.2 5.5c1.9 0 3.3 1 4.1 2.3.8-1.3 2.2-2.3 4.1-2.3 3.2 0 5.2 3.1 3.8 6.4C19.5 16.4 12 21 12 21z"/></svg></span>` : ``}
     </button>`).join("");
   $$("[data-draw]").forEach(b=>b.addEventListener("click",()=>{
-    selectSession(+b.dataset.draw);
-    $$(".tab").forEach(x=>x.classList.remove("active"));
+    // let the card slide out of the pile, then open it
+    const quick = matchMedia("(prefers-reduced-motion:reduce)").matches;
+    b.classList.add("drawing");
+    setTimeout(()=>{
+      selectSession(+b.dataset.draw);
+      $$(".tab").forEach(x=>x.classList.remove("active"));
+      b.classList.remove("drawing");
+    }, quick ? 0 : 360);
   }));
 }
 
