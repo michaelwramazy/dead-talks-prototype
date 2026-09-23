@@ -192,6 +192,30 @@ body{
 }
 .section-head .rule{flex:1;height:1px;background:linear-gradient(90deg,rgba(212,169,78,.5),rgba(212,169,78,.06))}
 .section-head .chev{color:var(--gold);opacity:.8}
+/* ---------- the finder ----------
+   sits on the Explore line; a gold glass at rest, a slim field that
+   slides open in place of the rule when tapped, and the tiles below
+   filter as you type */
+.finder{display:flex;align-items:center;gap:6px;margin:0;flex:0 0 auto}
+.finder-btn{
+  background:none;border:0;padding:6px;color:var(--gold);opacity:.85;cursor:pointer;line-height:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.finder-btn:hover{opacity:1}
+.finder-field{
+  width:0;opacity:0;padding:0;border:0;border-bottom:1px solid rgba(212,169,78,.55);
+  background:none;color:var(--parchment);font-family:var(--body);font-size:14px;outline:none;
+  transition:width .28s cubic-bezier(.2,.75,.3,1),opacity .2s;
+}
+.finder-field::placeholder{color:rgba(239,223,192,.45);font-style:italic}
+.finder-field::-webkit-search-cancel-button{-webkit-appearance:none}
+.section-head.searching .finder{flex:1}
+.section-head.searching .rule{display:none}
+.section-head.searching .finder-field{width:100%;opacity:1;padding:4px 2px}
+.finder-empty{
+  margin:6px 4px 0;font-size:13px;font-style:italic;color:rgba(239,223,192,.55);text-align:center;
+}
+
 
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 .tile{
@@ -1124,11 +1148,18 @@ body{
         </div>
       </button>
 
-      <div class="section-head">
+      <div class="section-head" id="explore-head">
         <h3>Explore sessions</h3>
         <div class="rule"></div>
-        <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m9 6 6 6-6 6"/></svg>
+        <!-- a tiny search: a magnifying glass at rest, a slim field when tapped -->
+        <form class="finder" id="finder" role="search" autocomplete="off">
+          <input class="finder-field" id="finder-field" type="search" placeholder="a name, a theme, a word…" aria-label="Search sessions">
+          <button class="finder-btn" id="finder-btn" type="button" aria-label="Search sessions">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+          </button>
+        </form>
       </div>
+      <p class="finder-empty" id="finder-empty" hidden>Nothing matches yet — try a being's name or a word from a Code.</p>
 
       <div class="tiles" id="tiles"></div>
 
@@ -31015,6 +31046,37 @@ function renderLibrary(){
     }, quick ? 0 : 360);
   }));
 }
+
+
+/* the finder: open on tap, filter the tiles as you type */
+(function(){
+  const head = $("#explore-head"), field = $("#finder-field"), btn = $("#finder-btn");
+  if(!head) return;
+  function haystack(s){
+    return [s.title, ...(s.beings||[]).map(b=>b.name),
+            ...(s.wisdom_codes||[]).map(c=>c.title+" "+c.quote)].join(" ").toLowerCase();
+  }
+  function apply(){
+    const q = field.value.trim().toLowerCase();
+    let shown = 0;
+    $$("[data-tile]").forEach(t=>{
+      const s = SESSIONS.find(x => x.session_number === +t.dataset.tile);
+      const ok = !q || (s && haystack(s).includes(q));
+      t.hidden = !ok; if(ok) shown++;
+    });
+    $("#finder-empty").hidden = !(q && shown === 0);
+  }
+  btn.addEventListener("click", ()=>{
+    if(head.classList.contains("searching") && !field.value){ head.classList.remove("searching"); apply(); return; }
+    head.classList.add("searching"); field.focus();
+  });
+  field.addEventListener("input", apply);
+  field.addEventListener("keydown", e=>{ if(e.key === "Escape"){ field.value = ""; head.classList.remove("searching"); apply(); } });
+  field.addEventListener("blur", ()=>{ if(!field.value) head.classList.remove("searching"); });
+  // keep the filter after the tiles are redrawn
+  const _rh = window.renderHome; 
+  window.renderHome = function(){ _rh(); apply(); };
+})();
 
 /* pull the lever: the pile riffles, then a card is drawn at random */
 let drawing = false;
