@@ -30463,7 +30463,10 @@ function paintArt(){
 
 function renderHome(){
   $("#home-title").textContent = session.title;
-  const others = SESSIONS.filter(s => s.session_number !== session.session_number);
+  // the featured card is left out of the tiles — unless a search is on,
+  // when every session must be findable, the featured one included
+  const q = ($("#finder-field") || {}).value || "";
+  const others = q.trim() ? SESSIONS : SESSIONS.filter(s => s.session_number !== session.session_number);
   // a red heart on the tiles you have liked, nothing on the rest
   const loved = (typeof mine !== "undefined" && mine && mine.loved) ? mine.loved : new Set();
   $("#tiles").innerHTML = others.map(s=>`
@@ -30687,7 +30690,7 @@ function flipCard(force){
 
 $("#flip-stage").addEventListener("click", e => {
   // let the buttons on the back face work without flipping the card
-  if(e.target.closest("button")) return;
+  if(e.target.closest("button, input")) return;
   flipCard();
 });
 $("#reveal-btn").addEventListener("click", () => flipCard());
@@ -31093,11 +31096,11 @@ function renderLibrary(){
     $("#finder-empty").hidden = !(q && shown === 0);
   }
   btn.addEventListener("click", ()=>{
-    if(head.classList.contains("searching") && !field.value){ head.classList.remove("searching"); apply(); return; }
+    if(head.classList.contains("searching") && !field.value){ head.classList.remove("searching"); renderHome(); return; }
     head.classList.add("searching"); field.focus();
   });
-  field.addEventListener("input", apply);
-  field.addEventListener("keydown", e=>{ if(e.key === "Escape"){ field.value = ""; head.classList.remove("searching"); apply(); } });
+  field.addEventListener("input", ()=>renderHome());
+  field.addEventListener("keydown", e=>{ if(e.key === "Escape"){ field.value = ""; head.classList.remove("searching"); renderHome(); } });
   field.addEventListener("blur", ()=>{ if(!field.value) head.classList.remove("searching"); });
   // keep the filter after the tiles are redrawn
   const _rh = window.renderHome; 
@@ -31119,6 +31122,9 @@ function renderLibrary(){
     });
     $("#codes-empty").hidden = !(q && shown === 0);
   }
+  // the card flips on a tap, so these taps must not reach it
+  [glass, field].forEach(el=>["click","pointerdown","touchstart","mousedown"].forEach(ev=>
+    el.addEventListener(ev, e=>e.stopPropagation())));
   glass.addEventListener("click", ()=>{
     const open = field.hidden;
     field.hidden = !open; glass.classList.toggle("open", open);
