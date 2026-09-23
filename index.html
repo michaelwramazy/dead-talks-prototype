@@ -641,6 +641,51 @@ body{
 @media (prefers-reduced-motion:reduce){
   .spread-card{transition:none}
 }
+/* ---------- the lever ---------- */
+.draw-lever{
+  display:flex;align-items:center;gap:14px;margin:0 auto 22px;padding:10px 18px 10px 12px;
+  background:linear-gradient(180deg,rgba(20,29,61,.9),rgba(11,18,41,.95));
+  border:1px solid rgba(212,169,78,.55);border-radius:999px;color:var(--parchment);
+  font-family:var(--display);font-size:15px;letter-spacing:.02em;cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-tap-highlight-color:transparent;transition:transform .15s ease,border-color .2s;
+}
+.draw-lever:hover{border-color:var(--gold-bright)}
+.draw-lever:active{transform:scale(.98)}
+.draw-lever:focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px}
+.lever-slot{
+  position:relative;width:14px;height:40px;border-radius:8px;
+  background:rgba(0,0,0,.55);box-shadow:inset 0 2px 6px rgba(0,0,0,.8),inset 0 0 0 1px rgba(212,169,78,.25);
+}
+.lever-arm{
+  position:absolute;left:50%;top:6px;width:4px;height:16px;margin-left:-2px;border-radius:2px;
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold-dim));
+  transition:top .22s cubic-bezier(.3,1.4,.5,1);
+}
+.lever-knob{
+  position:absolute;left:50%;top:-9px;width:18px;height:18px;margin-left:-9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff1c8,var(--gold) 55%,var(--gold-dim));
+  box-shadow:0 2px 6px rgba(0,0,0,.7);
+}
+/* pulled: the arm drops to the bottom of the slot */
+.draw-lever.pulled .lever-arm{top:20px}
+.draw-lever.pulled .lever-knob{top:-3px}
+/* the riffle: every card flicks sideways in turn, like a thumb running
+   down the edge of a deck */
+@keyframes riffle{
+  0%{transform:translateX(0) rotate(0)}
+  35%{transform:translateX(14px) rotate(1.4deg)}
+  70%{transform:translateX(-9px) rotate(-.9deg)}
+  100%{transform:translateX(0) rotate(0)}
+}
+.spread.shuffling .spread-card{
+  animation:riffle .5s cubic-bezier(.3,.7,.3,1) both;
+  animation-delay:calc(var(--i) * 18ms);
+}
+@media (prefers-reduced-motion:reduce){
+  .spread.shuffling .spread-card{animation:none}
+  .lever-arm{transition:none}
+}
 .reveal-hint{
   display:flex;align-items:center;justify-content:center;gap:9px;
   color:rgba(239,223,192,.62);font-size:13px;font-weight:300;
@@ -1273,8 +1318,13 @@ body{
     <section class="view" id="view-library">
       <div class="library-head">
         <h2>The Library</h2>
-        <p>Every session, face up. Tap a card to draw it.</p>
+        <p>Every session, face up. Tap a card to draw it — or pull the lever and let the deck choose.</p>
       </div>
+      <!-- the lever: pull it and the pile riffles, then one card is drawn at random -->
+      <button class="draw-lever" id="draw-lever" aria-label="Shuffle and draw a card at random">
+        <span class="lever-slot"><span class="lever-arm"><span class="lever-knob"></span></span></span>
+        <span class="lever-text">Pull to draw a card</span>
+      </button>
       <div class="spread" id="spread"></div>
     </section>
 
@@ -30944,7 +30994,7 @@ function renderLibrary(){
   const pile = [...SESSIONS].sort((a,b)=>(b.session_date||"").localeCompare(a.session_date||""));
   const loved = (typeof mine !== "undefined" && mine && mine.loved) ? mine.loved : new Set();
   $("#spread").innerHTML = pile.map((s,i)=>`
-    <button class="spread-card" data-draw="${s.session_number}" style="z-index:${pile.length-i}"
+    <button class="spread-card" data-draw="${s.session_number}" style="z-index:${pile.length-i};--i:${i}"
             aria-label="${s.title}">
       <span class="sc-art" style="background-image:url('${s.artwork_path}')"></span>
       <span class="sc-frame"></span>
@@ -30965,6 +31015,33 @@ function renderLibrary(){
     }, quick ? 0 : 360);
   }));
 }
+
+/* pull the lever: the pile riffles, then a card is drawn at random */
+let drawing = false;
+$("#draw-lever").addEventListener("click", ()=>{
+  if(drawing) return;
+  drawing = true;
+  const lever = $("#draw-lever"), pile = $("#spread");
+  const cards = $$(".spread-card");
+  if(!cards.length){ drawing = false; return; }
+  const quick = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  lever.classList.add("pulled");
+  pile.classList.add("shuffling");
+  const pick = cards[Math.floor(Math.random() * cards.length)];
+  const riffleMs = quick ? 0 : 500 + cards.length * 18;
+  setTimeout(()=>{
+    pile.classList.remove("shuffling");
+    lever.classList.remove("pulled");
+    pick.scrollIntoView({ block:"center", behavior: quick ? "auto" : "smooth" });
+    pick.classList.add("drawing");
+    setTimeout(()=>{
+      selectSession(+pick.dataset.draw);
+      $$(".tab").forEach(x=>x.classList.remove("active"));
+      pick.classList.remove("drawing");
+      drawing = false;
+    }, quick ? 0 : 700);
+  }, riffleMs);
+});
 
 $$(".tab").forEach(t=>t.addEventListener("click",()=>{
   $$(".tab").forEach(x=>x.classList.remove("active"));
