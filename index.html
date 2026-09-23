@@ -384,6 +384,16 @@ body{
   margin:14px 0 0;font-size:10.5px;line-height:1.5;
   color:rgba(239,223,192,.4);
 }
+.home-disclaimer{
+  display:block;margin:22px auto 8px;padding:8px;background:none;border:0;
+  color:rgba(239,223,192,.35);font-family:var(--body);font-size:11px;
+  letter-spacing:.02em;text-decoration:underline;cursor:pointer;
+}
+.home-disclaimer:hover{color:rgba(239,223,192,.6)}
+#disclaimer-sheet .sheet-inner{text-align:left}
+#disclaimer-sheet p{
+  font-size:13px;line-height:1.6;color:rgba(239,223,192,.75);margin:0 0 12px;
+}
 
 /* saved / loved collection */
 .mine-head{text-align:center;margin:2px 0 16px}
@@ -1055,6 +1065,8 @@ body{
       </div>
 
       <div class="tiles" id="tiles"></div>
+
+      <button class="home-disclaimer" id="disclaimer-open">Disclaimer</button>
     </section>
 
     <!-- ============ CARD (flip) ============ -->
@@ -1309,6 +1321,22 @@ body{
       <p id="song-sub"></p>
       <div id="song-list"></div>
       <button class="ghost" id="song-close">Close</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="disclaimer-sheet">
+    <div class="sheet-inner">
+      <h3>Disclaimer</h3>
+      <p>Dead Talks presents channelled, interpretive sessions inspired by
+         real historical figures. The words on this site are not verified
+         quotations, and no session is the literal speech, likeness, or
+         endorsement of the person it draws from.</p>
+      <p>Each session is a creative and reflective work, offered for
+         inspiration and personal reflection rather than as historical or
+         biographical fact.</p>
+      <p>If you are connected to someone featured here and have a concern
+         about a session, please reach out and we will address it.</p>
+      <button class="ghost" id="disclaimer-close">Close</button>
     </div>
   </div>
 
@@ -31360,6 +31388,12 @@ wireLike("#card-like", sessionTarget);
 $("#who-close").addEventListener("click", ()=>$("#who-sheet").classList.remove("show"));
 $("#who-sheet").addEventListener("click", e=>{
   if(e.target.id === "who-sheet") $("#who-sheet").classList.remove("show");
+});
+
+$("#disclaimer-open").addEventListener("click", ()=>$("#disclaimer-sheet").classList.add("show"));
+$("#disclaimer-close").addEventListener("click", ()=>$("#disclaimer-sheet").classList.remove("show"));
+$("#disclaimer-sheet").addEventListener("click", e=>{
+  if(e.target.id === "disclaimer-sheet") $("#disclaimer-sheet").classList.remove("show");
 });
 
 /* ---------- the profile circle ----------
