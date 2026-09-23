@@ -808,6 +808,20 @@ body{
 .xp svg{color:var(--ink)}
 
 .wisdom-list{display:flex;flex-direction:column;gap:9px}
+/* the little glass on the Wisdom Codes line, and its field */
+.codes-glass{
+  background:none;border:0;padding:4px;margin-left:2px;color:var(--gold-dim);opacity:.9;cursor:pointer;line-height:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.codes-glass:hover,.codes-glass.open{color:var(--gold);opacity:1}
+.codes-field{
+  display:block;width:100%;margin:2px 0 10px;padding:6px 2px;border:0;border-bottom:1px solid rgba(122,96,48,.45);
+  background:none;color:var(--ink);font-family:var(--body);font-size:14px;outline:none;
+}
+.codes-field::placeholder{color:var(--ink-soft);font-style:italic;opacity:.8}
+.codes-field::-webkit-search-cancel-button{-webkit-appearance:none}
+.codes-empty{margin:0 0 10px;font-size:12.5px;font-style:italic;color:var(--ink-soft);text-align:center}
+
 .wisdom-row{
   display:flex;align-items:center;gap:0;
   background:linear-gradient(120deg,#0E1731,#101A38);
@@ -1231,7 +1245,14 @@ body{
                     <div class="divider-label"><div class="line"></div><span>Experience the session</span><div class="line"></div></div>
                     <div class="experience" id="s-experience"></div>
 
-                    <div class="divider-label"><div class="line"></div><span>Wisdom Codes</span><div class="line"></div></div>
+                    <div class="divider-label" id="codes-head"><div class="line"></div><span>Wisdom Codes</span><div class="line"></div>
+                      <!-- a small glass: searches this card's Codes only -->
+                      <button class="codes-glass" id="codes-glass" type="button" aria-label="Search this card's Codes">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+                      </button>
+                    </div>
+                    <input class="codes-field" id="codes-field" type="search" placeholder="a word from one of the Codes…" aria-label="Search this card's Codes" autocomplete="off" hidden>
+                    <p class="codes-empty" id="codes-empty" hidden>No Code on this card has that word.</p>
                     <div class="wisdom-list" id="s-wisdom"></div>
           <div id="s-readall"></div>
 
@@ -30534,6 +30555,9 @@ function renderSession(){
     </button>`).join("");
 
   $$("[data-wc]").forEach(b=>b.addEventListener("click",()=>openDeck("code", +b.dataset.wc)));
+  // a fresh card starts with the Codes search closed and all five showing
+  $("#codes-field").value = ""; $("#codes-field").hidden = true; $("#codes-empty").hidden = true;
+  $("#codes-glass").classList.remove("open");
 
   const all = session.wisdom_items ? session.wisdom_items.length : 0;
   $("#s-readall").innerHTML = all
@@ -31078,6 +31102,30 @@ function renderLibrary(){
   // keep the filter after the tiles are redrawn
   const _rh = window.renderHome; 
   window.renderHome = function(){ _rh(); apply(); };
+})();
+
+
+/* the glass on the Wisdom Codes line: search this card's five Codes */
+(function(){
+  const glass = $("#codes-glass"), field = $("#codes-field");
+  if(!glass) return;
+  function apply(){
+    const q = field.value.trim().toLowerCase();
+    let shown = 0;
+    $$("[data-wc]").forEach(row=>{
+      const w = session.wisdom_codes[+row.dataset.wc];
+      const ok = !q || (w.title + " " + w.quote).toLowerCase().includes(q);
+      row.hidden = !ok; if(ok) shown++;
+    });
+    $("#codes-empty").hidden = !(q && shown === 0);
+  }
+  glass.addEventListener("click", ()=>{
+    const open = field.hidden;
+    field.hidden = !open; glass.classList.toggle("open", open);
+    if(open) field.focus(); else { field.value = ""; apply(); }
+  });
+  field.addEventListener("input", apply);
+  field.addEventListener("keydown", e=>{ if(e.key === "Escape"){ field.value = ""; field.hidden = true; glass.classList.remove("open"); apply(); } });
 })();
 
 /* pull the lever: the pile riffles, then a card is drawn at random */
