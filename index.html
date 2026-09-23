@@ -30885,8 +30885,8 @@ async function paintReflection(){
 
 function renderLibrary(){
   // a few cards fan loosely; a full deck stacks tight, each card showing
-  // just the strip that carries its date and name (never less than 12%)
-  const peek = Math.max(12, Math.min(57, 230 / SESSIONS.length));
+  // just the strip that carries its date and name (never less than 15%)
+  const peek = Math.max(15, Math.min(57, 230 / SESSIONS.length));
   $("#spread").style.setProperty("--peek", peek + "%");
   $("#spread").innerHTML = SESSIONS.map(s=>`
     <button class="spread-card" data-draw="${s.session_number}"
