@@ -837,7 +837,13 @@ body{
   position:absolute;inset:0;width:100%;height:100%;
   background:none;border:0;padding:0;margin:0;cursor:pointer;line-height:0;
 }
-.lc-heart svg{display:block;width:100%;height:100%}
+.lc-heart svg{position:absolute;inset:0;display:block;width:100%;height:100%}
+/* the two states are two separate drawings, stacked; switching only
+   changes opacity, so nothing inside the corner is ever re-laid-out */
+.lc-off,.lc-on{transition:opacity .18s ease}
+.lc-on{opacity:0}
+.likecorner.on .lc-on{opacity:1}
+.likecorner.on .lc-off{opacity:0}
 /* the unliked heart is drawn, not filled: an open outline with the
    card showing through it, so it reads as an invitation rather than
    as something already done */
@@ -845,10 +851,10 @@ body{
   fill:none;stroke:var(--rose);stroke-width:1.6;
   stroke-linejoin:round;stroke-linecap:round;opacity:.92;
   transition:opacity .18s ease,transform .18s cubic-bezier(.2,.8,.3,1);
-  transform-origin:49px 26px;
+  transform-origin:55px 34px;
 }
 .lc-heart:hover .lc-plain{opacity:1;transform:scale(1.09)}
-.lc-wrap{visibility:hidden;fill:var(--gold)}
+.lc-wrap{fill:var(--gold)}
 /* on the artwork face the outline would otherwise disappear into the
    frame's gold corner ornament, so it is drawn a shade heavier and
    lifted off the picture with a shadow */
@@ -859,9 +865,7 @@ body{
 .likecorner.dark.overleaf .lc-plain{
   stroke-width:1.6;opacity:.92;filter:none;
 }
-.lc-fold{visibility:hidden;fill:rgba(122,96,48,.42)}
-.likecorner.on .lc-plain{visibility:hidden}
-.likecorner.on .lc-wrap,.likecorner.on .lc-fold{visibility:visible}
+.lc-fold{fill:rgba(122,96,48,.42)}
 .lc-heart:focus-visible{outline:2px solid var(--gold-bright);outline-offset:-6px;border-radius:8px}
 /* the number is always there, even at nought — it is the quiet
    evidence that other people have been here */
@@ -1099,16 +1103,16 @@ body{
       <div class="flip-stage" id="flip-stage">
         <div class="likecorner dark" id="card-like">
           <button class="lc-heart" aria-label="Like this session">
-            <svg viewBox="0 0 74 74" width="74" height="74" aria-hidden="true">
-              <defs>
-                <mask id="lcknock-card-like" maskUnits="userSpaceOnUse" x="0" y="0" width="74" height="74">
-                  <rect x="0" y="0" width="74" height="74" fill="#fff"/>
-                  <path transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z" fill="#000"/>
-                </mask>
-              </defs>
-              <path class="lc-wrap" d="M10 0 L74 0 L74 64 Z" mask="url(#lcknock-card-like)"/>
+            <!-- two pictures that never change: the outline heart, and the
+                 gold wrap with the heart cut out of it by the fill rule (no
+                 SVG mask: iOS Safari re-rasterised the mask mid-toggle and
+                 the corner jumped). The state only cross-fades them. -->
+            <svg class="lc-off" viewBox="0 0 74 74" aria-hidden="true">
+              <path class="lc-plain" d="M55 42s-7.2-4.5-9.2-9A5 5 0 0 1 55 28.5 5 5 0 0 1 64.2 33c-2 4.5-9.2 9-9.2 9z"/>
+            </svg>
+            <svg class="lc-on" viewBox="0 0 74 74" aria-hidden="true">
+              <path class="lc-wrap" fill-rule="evenodd" d="M10 0 L74 0 L74 64 Z M55 42s-7.2-4.5-9.2-9A5 5 0 0 1 55 28.5 5 5 0 0 1 64.2 33c-2 4.5-9.2 9-9.2 9z"/>
               <path class="lc-fold" d="M10 0 L14 0 L74 60 L74 64 Z"/>
-              <path class="lc-plain" transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/>
             </svg>
           </button>
           <button class="lc-count" aria-label="See who liked this session">0</button>
@@ -1185,16 +1189,16 @@ body{
       <div class="wisdom-card" id="wc-card">
         <div class="likecorner" id="wc-like">
           <button class="lc-heart" aria-label="Like this quote">
-            <svg viewBox="0 0 74 74" width="74" height="74" aria-hidden="true">
-              <defs>
-                <mask id="lcknock-wc-like" maskUnits="userSpaceOnUse" x="0" y="0" width="74" height="74">
-                  <rect x="0" y="0" width="74" height="74" fill="#fff"/>
-                  <path transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z" fill="#000"/>
-                </mask>
-              </defs>
-              <path class="lc-wrap" d="M10 0 L74 0 L74 64 Z" mask="url(#lcknock-wc-like)"/>
+            <!-- two pictures that never change: the outline heart, and the
+                 gold wrap with the heart cut out of it by the fill rule (no
+                 SVG mask: iOS Safari re-rasterised the mask mid-toggle and
+                 the corner jumped). The state only cross-fades them. -->
+            <svg class="lc-off" viewBox="0 0 74 74" aria-hidden="true">
+              <path class="lc-plain" d="M55 42s-7.2-4.5-9.2-9A5 5 0 0 1 55 28.5 5 5 0 0 1 64.2 33c-2 4.5-9.2 9-9.2 9z"/>
+            </svg>
+            <svg class="lc-on" viewBox="0 0 74 74" aria-hidden="true">
+              <path class="lc-wrap" fill-rule="evenodd" d="M10 0 L74 0 L74 64 Z M55 42s-7.2-4.5-9.2-9A5 5 0 0 1 55 28.5 5 5 0 0 1 64.2 33c-2 4.5-9.2 9-9.2 9z"/>
               <path class="lc-fold" d="M10 0 L14 0 L74 60 L74 64 Z"/>
-              <path class="lc-plain" transform="translate(43,22)" d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/>
             </svg>
           </button>
           <button class="lc-count" aria-label="See who liked this quote">0</button>
