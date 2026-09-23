@@ -588,7 +588,7 @@ body{
   /* the newest card lies whole on top of the pile; every older card is
      tucked underneath it and shows only its bottom strip, where the date
      and name sit. renderLibrary sets --peek from the deck size, so a big
-     deck sits tight like a real stack (never under 15%) */
+     deck sits tight like a real stack (never under 20%) */
   --peek:57%;
 }
 .spread-card{
@@ -30930,8 +30930,8 @@ async function paintReflection(){
 
 function renderLibrary(){
   // a few cards fan loosely; a full deck stacks tight, each older card
-  // showing just the strip that carries its date and name (never less than 15%)
-  const peek = Math.max(15, Math.min(57, 230 / SESSIONS.length));
+  // showing just the strip that carries its date and name (never less than 20%)
+  const peek = Math.max(20, Math.min(57, 230 / SESSIONS.length));
   $("#spread").style.setProperty("--peek", peek + "%");
   // newest session on top of the pile, the oldest at the bottom; the
   // first card in the flow is drawn above the ones after it
