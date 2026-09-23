@@ -31053,8 +31053,10 @@ function renderLibrary(){
   const head = $("#explore-head"), field = $("#finder-field"), btn = $("#finder-btn");
   if(!head) return;
   function haystack(s){
+    // title, the beings, the five Codes, and every line spoken in the session
     return [s.title, ...(s.beings||[]).map(b=>b.name),
-            ...(s.wisdom_codes||[]).map(c=>c.title+" "+c.quote)].join(" ").toLowerCase();
+            ...(s.wisdom_codes||[]).map(c=>c.title+" "+c.quote),
+            ...(s.wisdom_items||[]).map(w=>w.text)].join(" ").toLowerCase();
   }
   function apply(){
     const q = field.value.trim().toLowerCase();
