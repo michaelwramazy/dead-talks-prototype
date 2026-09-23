@@ -212,7 +212,7 @@ body{
   position:absolute;right:9px;bottom:11px;color:var(--parchment);
   opacity:.85;z-index:3;background:none;border:0;cursor:pointer;padding:2px;
 }
-.tile .fav.on{color:var(--rose);opacity:1}
+.tile .fav.on{color:var(--rose);opacity:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}
 
 /* ---------- bottom nav ---------- */
 .tabbar{
@@ -30362,15 +30362,17 @@ function paintArt(){
 function renderHome(){
   $("#home-title").textContent = session.title;
   const others = SESSIONS.filter(s => s.session_number !== session.session_number);
+  // a red heart on the tiles you have liked, nothing on the rest
+  const loved = (typeof mine !== "undefined" && mine && mine.loved) ? mine.loved : new Set();
   $("#tiles").innerHTML = others.map(s=>`
     <button class="tile" data-tile="${s.session_number}">
       <span class="art" style="background-image:url('${s.artwork_path}');
             background-size:cover;background-position:50% 22%"></span>
       <span class="label">${tileLabel(s.title)}</span>
-      <span class="fav" role="presentation">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-          <path d="M12 20s-7.2-4.5-9.2-9A5 5 0 0 1 12 6.5 5 5 0 0 1 21.2 11c-2 4.5-9.2 9-9.2 9z"/></svg>
-      </span>
+      ${s.id && loved.has("session:"+s.id) ? `<span class="fav on" role="presentation" aria-label="One of your favourites">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 21s-7.5-4.6-9.6-9.1C1 8.6 3 5.5 6.2 5.5c1.9 0 3.3 1 4.1 2.3.8-1.3 2.2-2.3 4.1-2.3 3.2 0 5.2 3.1 3.8 6.4C19.5 16.4 12 21 12 21z"/></svg>
+      </span>` : ``}
     </button>`).join("");
   $$("[data-tile]").forEach(b=>b.addEventListener("click",()=>selectSession(+b.dataset.tile)));
 }
@@ -31298,6 +31300,7 @@ async function toggleLike(t, el){
   }
   paintLike(el, t);
   if($("#view-mine").classList.contains("active")) renderMine();
+  if(t.type === "session") renderHome();   // keep the tile's red heart in step
 }
 
 /* who liked this — the count is the door to it */
@@ -31832,6 +31835,7 @@ async function refreshAccount(){
   paintRole();
   paintKeepState();
   renderMine();
+  renderHome();      // the red hearts on the tiles depend on who is signed in
   if(me){
     closeAuth();
     if(pendingAction){
