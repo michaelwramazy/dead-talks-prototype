@@ -821,6 +821,15 @@ body{
 .codes-field::placeholder{color:var(--ink-soft);font-style:italic;opacity:.8}
 .codes-field::-webkit-search-cancel-button{-webkit-appearance:none}
 .codes-empty{margin:0 0 10px;font-size:12.5px;font-style:italic;color:var(--ink-soft);text-align:center}
+.found-lines{margin-top:10px}
+.found-lines .fl-head{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim);margin:0 0 6px 2px}
+.found-line{
+  display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid rgba(122,96,48,.25);
+  padding:8px 4px;cursor:pointer;font-family:var(--display);font-size:15px;line-height:1.35;color:var(--ink);
+}
+.found-line:hover{color:var(--gold-dim)}
+.found-line mark{background:rgba(212,169,78,.28);color:inherit;border-radius:2px;padding:0 1px}
+.found-line small{display:block;font-family:var(--body);font-size:11px;font-style:italic;color:var(--ink-soft);margin-top:2px}
 
 .wisdom-row{
   display:flex;align-items:center;gap:0;
@@ -1252,8 +1261,10 @@ body{
                       </button>
                     </div>
                     <input class="codes-field" id="codes-field" type="search" placeholder="a word from one of the Codes…" aria-label="Search this card's Codes" autocomplete="off" hidden>
-                    <p class="codes-empty" id="codes-empty" hidden>No Code on this card has that word.</p>
+                    <p class="codes-empty" id="codes-empty" hidden>Nothing in this session has that word.</p>
                     <div class="wisdom-list" id="s-wisdom"></div>
+                    <!-- lines from the whole session that carry the searched word -->
+                    <div class="found-lines" id="found-lines" hidden></div>
           <div id="s-readall"></div>
 
                     <div class="ornament" style="margin:20px 0 6px"><div class="line"></div><span class="mark">✦</span><div class="line"></div></div>
@@ -30560,6 +30571,7 @@ function renderSession(){
   $$("[data-wc]").forEach(b=>b.addEventListener("click",()=>openDeck("code", +b.dataset.wc)));
   // a fresh card starts with the Codes search closed and all five showing
   $("#codes-field").value = ""; $("#codes-field").hidden = true; $("#codes-empty").hidden = true;
+  $("#found-lines").hidden = true; $("#found-lines").innerHTML = "";
   $("#codes-glass").classList.remove("open");
 
   const all = session.wisdom_items ? session.wisdom_items.length : 0;
@@ -31112,6 +31124,7 @@ function renderLibrary(){
 (function(){
   const glass = $("#codes-glass"), field = $("#codes-field");
   if(!glass) return;
+  const esc = t => t.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   function apply(){
     const q = field.value.trim().toLowerCase();
     let shown = 0;
@@ -31120,7 +31133,18 @@ function renderLibrary(){
       const ok = !q || (w.title + " " + w.quote).toLowerCase().includes(q);
       row.hidden = !ok; if(ok) shown++;
     });
-    $("#codes-empty").hidden = !(q && shown === 0);
+    // and every line spoken in the session, listed under the Codes
+    const box = $("#found-lines");
+    const hits = q ? (session.wisdom_items || []).map((w,i)=>({w,i}))
+                       .filter(x => x.w.text.toLowerCase().includes(q)) : [];
+    if(hits.length){
+      const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "ig");
+      box.innerHTML = `<p class="fl-head">${hits.length} line${hits.length===1?"":"s"} from this session</p>` +
+        hits.map(x => `<button class="found-line" data-fl="${x.i}">${esc(x.w.text).replace(re, m=>`<mark>${m}</mark>`)}${x.w.being ? `<small>${esc(x.w.being)}</small>` : ``}</button>`).join("");
+      $$("[data-fl]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); openDeck("item", +b.dataset.fl); }));
+    } else box.innerHTML = "";
+    box.hidden = !hits.length;
+    $("#codes-empty").hidden = !(q && shown === 0 && !hits.length);
   }
   // the card flips on a tap, so these taps must not reach it
   [glass, field].forEach(el=>["click","pointerdown","touchstart","mousedown"].forEach(ev=>
