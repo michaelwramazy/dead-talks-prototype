@@ -1600,13 +1600,17 @@ body{
   </div>
 
   <nav class="tabbar" id="tabbar">
+    <!-- the "Home" tab (view-home: the featured card + tiles) is labeled
+         Library, with a book icon -->
     <button class="tab active" data-tab="home">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>
-      Home
-    </button>
-    <button class="tab" data-tab="library">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5.5C6 4 9 4 12 5.5 15 4 18 4 21 5.5V19c-3-1.5-6-1.5-9 0-3-1.5-6-1.5-9 0z"/><path d="M12 5.5V19"/></svg>
       Library
+    </button>
+    <!-- the "Library" tab (view-library: the fanned stack + shuffle lever)
+         is labeled Shuffle, with a shuffle icon -->
+    <button class="tab" data-tab="library">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c1.6 0 3 .9 3.8 2.2L15 18h3.5"/><path d="M3 18h3.5c1.6 0 3-.9 3.8-2.2"/><path d="m15 6 3.5 0"/><path d="m16.5 3.5 2 2.5-2 2.5"/><path d="m16.5 15.5 2 2.5-2 2.5"/></svg>
+      Shuffle
     </button>
     <button class="tab" data-tab="reflect">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3.2 13.9 9 19.8 9.6 15.4 13.4 16.8 19.2 12 16.1 7.2 19.2 8.6 13.4 4.2 9.6 10.1 9z"/></svg>
