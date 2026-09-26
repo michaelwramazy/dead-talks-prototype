@@ -31980,7 +31980,7 @@ $("#journey-file").addEventListener("change", async e=>{
 
   const existing = await db.from("media_assets").select("id")
     .eq("session_id", editing.id).eq("kind", "journey").maybeSingle();
-  const row = { session_id: editing.id, kind:"journey", storage_path: path,
+  const row = { session_id: editing.id, kind:"journey", storage_path: path, is_primary: true,
                 mime_type: file.type || "audio/mpeg", byte_size: file.size };
   const res = existing.data
     ? await db.from("media_assets").update(row).eq("id", existing.data.id)
