@@ -1131,6 +1131,104 @@ body{
   font-size:12.5px;line-height:1.65;text-align:center;font-weight:300;
 }
 .legend b{color:var(--gold);font-weight:400}
+
+/* =========================================================
+   PLAY LAYER (2026-09-28): sigil, resonance, today's Code,
+   your sky, celebrations. Kept on this device for now.
+   ========================================================= */
+.today{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;width:100%;margin:4px 0 16px;padding:12px 14px;border-radius:14px;border:1px solid rgba(212,169,78,.45);background:linear-gradient(135deg,rgba(212,169,78,.12),rgba(61,49,87,.35));color:var(--parchment);font-family:var(--body);text-align:left;cursor:pointer}
+.today:focus-visible{outline:2px solid var(--gold-bright);outline-offset:2px}
+.today .sig{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;color:var(--gold-bright);background:rgba(8,14,34,.6);border:1px solid rgba(212,169,78,.35)}
+.today .k{font:600 10.5px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.today .t{font:600 18px/1.15 var(--display);color:var(--parchment)}
+.today .s{font-size:11.5px;color:rgba(239,223,192,.65)}
+.today .fl{display:flex;gap:3px}
+.today .fl i{width:8px;height:8px;border-radius:50%;background:rgba(239,223,192,.18)}
+.today .fl i.on{background:var(--gold-bright);box-shadow:0 0 6px rgba(239,203,124,.8)}
+
+.day-stage{perspective:1100px;width:min(300px,100%);aspect-ratio:3/4;margin:6px auto 14px;position:relative;cursor:pointer}
+.day-stage .f{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;transition:transform .85s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;border:1px solid var(--gold)}
+.day-stage .fb{background:radial-gradient(circle at 50% 45%,#1f2a5c,#0B1229)}
+.day-stage .ff{background:linear-gradient(180deg,var(--parchment),var(--parchment-deep));color:var(--ink);transform:rotateY(180deg)}
+.day-stage.open .fb{transform:rotateY(-180deg)}
+.day-stage.open .ff{transform:rotateY(0)}
+.day-stage .ff .kick{font:600 10.5px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim)}
+.day-stage .ff h4{margin:0;font:600 24px/1.1 var(--display)}
+.day-stage .ff q{font:italic 500 19px/1.35 var(--display);quotes:none}
+.day-stage .ff .a{font-size:12px;color:var(--ink-soft)}
+.day-stage .fb .t{font:600 22px var(--display);color:var(--parchment)}
+.day-stage .fb small{color:rgba(239,223,192,.6)}
+
+.play-btn{display:block;width:100%;padding:13px;border-radius:12px;border:1px solid var(--gold);background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1d1406;font:600 14px var(--body);cursor:pointer}
+.play-btn[disabled]{opacity:.5;cursor:default}
+.play-ghost{display:block;width:100%;padding:10px;border:0;background:none;color:rgba(239,223,192,.7);font:13px var(--body);cursor:pointer;text-decoration:underline}
+
+/* sigil builder */
+.sig-steps{display:flex;justify-content:center;gap:6px;margin:4px 0 8px}
+.sig-steps i{width:22px;height:3px;border-radius:2px;background:rgba(239,223,192,.2)}
+.sig-steps i.on{background:var(--gold)}
+.sig-preview{display:grid;place-items:center;margin:4px 0 10px}
+.sig-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.sig-grid button{aspect-ratio:1;border-radius:12px;border:1px solid rgba(212,169,78,.3);background:rgba(8,14,34,.5);color:var(--parchment);display:grid;place-items:center;cursor:pointer}
+.sig-grid button.on{border-color:var(--gold);background:rgba(212,169,78,.18);color:var(--gold-bright)}
+.sig-auras{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sig-auras button{width:40px;height:40px;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 3px #0B1229;cursor:pointer}
+.sig-auras button.on{border-color:var(--parchment)}
+.sig-beings{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:210px;overflow:auto;margin-bottom:12px}
+.sig-beings button{padding:9px 10px;border-radius:10px;border:1px solid rgba(212,169,78,.3);background:rgba(8,14,34,.5);color:var(--parchment);font:13px var(--body);text-align:left;cursor:pointer}
+.sig-beings button.on{border-color:var(--gold);background:rgba(212,169,78,.18)}
+.seeker{perspective:1100px;width:230px;aspect-ratio:3/4.2;margin:6px auto 14px;position:relative}
+.seeker .f{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;transition:transform .9s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px;text-align:center;border:1px solid var(--gold)}
+.seeker .fb{background:repeating-linear-gradient(45deg,#141d3d 0 10px,#0f1733 10px 20px)}
+.seeker .ff{background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--aura,#D4A94E) 26%,transparent),transparent 62%),linear-gradient(180deg,#172050,#0B1229);transform:rotateY(180deg)}
+.seeker.open .fb{transform:rotateY(-180deg)}
+.seeker.open .ff{transform:rotateY(0)}
+.seeker .nm{font:600 24px var(--display);color:var(--parchment)}
+.seeker .tt{font:600 10.5px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--gold-bright)}
+.seeker .gd{font-size:12px;color:rgba(239,223,192,.65)}
+.avatar-btn.sigiled{opacity:1;background:#0B1229}
+.avatar-btn.sigiled svg{width:100%;height:100%}
+
+/* resonance tray on the like corner */
+.res-tray{position:fixed;z-index:70;display:flex;gap:2px;padding:6px 8px 20px;border-radius:26px;border-radius:999px;background:#0B1229;border:1px solid var(--gold);box-shadow:0 10px 30px rgba(0,0,0,.5);animation:resPop .18s ease-out}
+.res-tray button{width:54px;height:42px;border-radius:50%;border:0;background:none;color:var(--gold-bright);display:grid;place-items:center;cursor:pointer;position:relative}
+.res-tray button:hover,.res-tray button:focus-visible{background:rgba(212,169,78,.2);outline:none;transform:scale(1.12)}
+.res-tray button span{position:absolute;bottom:-15px;font-size:9.5px;letter-spacing:.02em;color:rgba(239,223,192,.8);white-space:nowrap}
+@keyframes resPop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.res-mark{position:absolute;right:8px;top:62px;z-index:6;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(8,14,34,.8);border:1px solid var(--gold);color:var(--gold-bright);pointer-events:none}
+
+/* particles + celebration */
+.play-fx{position:fixed;inset:0;pointer-events:none;z-index:90}
+.play-fx i{position:absolute;width:7px;height:7px;border-radius:50%}
+.celebrate{position:absolute;inset:0;z-index:80;display:grid;place-items:center;background:rgba(4,8,20,.84);text-align:center;padding:24px}
+.celebrate[hidden]{display:none}
+.celebrate h3{font:600 32px var(--display);color:var(--gold-bright);margin:10px 0 6px}
+.celebrate p{color:rgba(239,223,192,.75);margin:0 0 18px;font-size:14px}
+
+/* your sky */
+.sky-head{text-align:center;padding:6px 0 10px}
+.sky-head .nm{font:600 28px var(--display);color:var(--parchment);margin-top:6px}
+.sky-head .tt{font:600 10.5px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.sky-head .gd{font-size:12.5px;color:rgba(239,223,192,.65)}
+.sky-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 14px}
+.sky-stats div{border:1px solid rgba(212,169,78,.3);border-radius:12px;padding:10px 6px;text-align:center}
+.sky-stats b{display:block;font:600 22px var(--body);color:var(--gold-bright);font-variant-numeric:lining-nums tabular-nums}
+.sky-stats span{font-size:11px;color:rgba(239,223,192,.65)}
+.sky-box{border:1px solid rgba(212,169,78,.3);border-radius:16px;background:radial-gradient(circle at 50% 120%,#1c2560,#070b1e);position:relative;margin-bottom:14px}
+.sky-box svg{display:block;width:100%;height:auto}
+.sky-box .cap{position:absolute;left:12px;bottom:8px;font-size:11.5px;color:rgba(239,223,192,.6)}
+.sky-list button{display:grid;grid-template-columns:22px 1fr;gap:10px;width:100%;padding:10px 2px;border:0;border-bottom:1px solid rgba(212,169,78,.18);background:none;color:var(--parchment);text-align:left;font:14px var(--body);cursor:pointer}
+.sky-list button svg{color:var(--gold-bright)}
+.sky-list small{display:block;color:rgba(239,223,192,.6);font-size:12px}
+.sky-sec{font:600 20px var(--display);color:var(--parchment);margin:18px 0 6px}
+.circle-note{border:1px dashed rgba(212,169,78,.45);border-radius:12px;padding:12px 14px;font-size:13px;color:rgba(239,223,192,.78);margin-bottom:10px}
+.now-me{display:flex;align-items:center;gap:8px;font-size:13px;color:#7FC6C0;margin:4px 0 10px}
+.now-me .eq{display:inline-flex;gap:2px;align-items:flex-end;height:10px}
+.now-me .eq i{width:2px;background:#7FC6C0;animation:eqb 1s infinite ease-in-out}
+.now-me .eq i:nth-child(2){animation-delay:.2s}.now-me .eq i:nth-child(3){animation-delay:.4s}
+@keyframes eqb{0%,100%{height:3px}50%{height:10px}}
+@media (prefers-reduced-motion:reduce){.day-stage .f,.seeker .f{transition:none}.now-me .eq i{animation:none}}
+
 </style>
 </head>
 <body>
@@ -1153,6 +1251,7 @@ body{
     <section class="view active" id="view-home">
       <h1 class="wordmark">DEAD TALKS</h1>
       <p class="tagline">One session. Many ways to experience its wisdom.</p>
+      <button class="today" id="today-card" type="button" aria-label="Today's Code"></button>
 
       <button class="featured" id="featured-card">
         <div class="cover">
@@ -1392,6 +1491,11 @@ body{
       <div class="spread" id="spread"></div>
     </section>
 
+    <!-- ==== YOUR SKY (Community tab) ============ -->
+    <section class="view" id="view-sky">
+      <div id="sky-body"></div>
+    </section>
+
   </div>
 
   <!-- ==== SONGS ============ -->
@@ -1553,6 +1657,7 @@ body{
         <button type="button" class="choose" id="avatar-choose">Change picture</button>
         <input type="file" id="avatar-file" accept="image/jpeg,image/png,image/webp" hidden>
       </div>
+      <button type="button" class="ghost linky" id="profile-sigil">Your sigil</button>
 
       <label for="profile-name">Name</label>
       <input type="text" id="profile-name" maxlength="60" placeholder="What shall we call you?">
@@ -1598,6 +1703,24 @@ body{
       <p class="fineprint" id="auth-fine">We store your email address and the codes
          you keep. Nothing else.</p>
     </div>
+  </div>
+
+  <!-- ==== PLAY: today's Code, sigil builder, celebration ============ -->
+  <div class="sheet" id="today-sheet">
+    <div class="sheet-inner">
+      <h3>Today's Code</h3>
+      <p>One Code a day, the same for everyone. Draw it to keep your streak.</p>
+      <div id="today-body"></div>
+      <button class="ghost" id="today-close" type="button">Close</button>
+    </div>
+  </div>
+  <div class="sheet" id="sigil-sheet">
+    <div class="sheet-inner" id="sigil-body"></div>
+  </div>
+  <div class="celebrate" id="celebrate" hidden role="dialog" aria-label="Constellation unlocked">
+    <div><div id="celebrate-sig"></div><h3>Your first constellation</h3>
+      <p>Three Codes kept. They are joined in your sky now.</p>
+      <button class="play-btn" id="celebrate-go" type="button">See my sky</button></div>
   </div>
 
   <nav class="tabbar" id="tabbar">
@@ -31272,6 +31395,7 @@ $$(".tab").forEach(t=>t.addEventListener("click",()=>{
   if(t.dataset.tab==="home") show("home");
   else if(t.dataset.tab==="library"){ renderLibrary(); show("library"); }
   else if(t.dataset.tab==="reflect"){ renderMine(); show("mine"); }
+  else if(t.dataset.tab==="community") openSky();
   else toast(`${t.textContent.trim()} — not in this preview`);
 }));
 
@@ -32177,6 +32301,283 @@ function openFromLink(){
   show("card");
   return true;
 }
+
+
+/* =========================================================
+   PLAY LAYER (2026-09-28)
+   Sigil builder, resonance reactions, today's Code with a
+   streak, your sky of kept Codes, and small celebrations.
+   Everything here lives in this browser (localStorage) for
+   now; nothing is written to Supabase.
+   ========================================================= */
+const PLAY_KEY = "deadtalks:play";
+const AURAS = ["#D4A94E","#E08A8A","#7FC6C0","#A58BE0","#8FB3E8"];
+const SIGILS = ["sun","moon","star","flame","leaf","wave","key","door"];
+const SIGIL_TITLE = {sun:"Bearer of Light",moon:"Keeper of Night",leaf:"Tender of Roots",flame:"Carrier of the Flame",wave:"Walker of Tides",key:"Opener of Doors",door:"Threshold Seeker",star:"Follower of Stars"};
+const RESONANCE = [
+  {k:"flame",label:"Lit"},{k:"leaf",label:"Softened"},{k:"star",label:"Awakened"},{k:"wave",label:"Moved"},{k:"key",label:"Unlocked"}
+];
+const play = (()=>{ try{ return JSON.parse(localStorage.getItem(PLAY_KEY)||"null") || {}; }catch(e){ return {}; } })();
+play.days ||= []; play.sky ||= []; play.res ||= {};
+function savePlay(){ try{ localStorage.setItem(PLAY_KEY, JSON.stringify(play)); }catch(e){} }
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const buzz = p => { try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} };
+const todayISO = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+
+function burst(x, y, color, n=16, spread=80){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let fx = $(".play-fx"); if(!fx){ fx=document.createElement("div"); fx.className="play-fx"; document.body.appendChild(fx); }
+  for(let i=0;i<n;i++){
+    const p=document.createElement("i"); p.style.background=color; p.style.boxShadow=`0 0 9px ${color}`;
+    p.style.left=x+"px"; p.style.top=y+"px"; fx.appendChild(p);
+    const a=Math.random()*Math.PI*2, d=spread*(.4+Math.random()*.8);
+    p.animate([{transform:"translate(-50%,-50%) scale(1)",opacity:1},
+               {transform:`translate(calc(-50% + ${Math.cos(a)*d}px),calc(-50% + ${Math.sin(a)*d-26}px)) scale(.2)`,opacity:0}],
+              {duration:650+Math.random()*450,easing:"cubic-bezier(.2,.7,.3,1)"}).onfinish=()=>p.remove();
+  }
+}
+function burstAt(el, color, n, spread){ const r=el.getBoundingClientRect(); burst(r.left+r.width/2, r.top+r.height/2, color, n, spread); }
+const aura = () => (play.sigil && play.sigil.aura) || "#EFCB7C";
+
+function sigilSVG(p, size){
+  const c = (p && p.aura) || AURAS[0], k = (p && p.sign) || "star";
+  const id = "sg"+Math.random().toString(36).slice(2,7);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 150 150" aria-hidden="true">
+    <defs><radialGradient id="${id}"><stop offset="0" stop-color="${c}" stop-opacity=".55"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="75" cy="75" r="74" fill="url(#${id})"/>
+    <circle cx="75" cy="75" r="52" fill="#0B1229" stroke="${c}" stroke-width="1.5"/>
+    <circle cx="75" cy="75" r="60" fill="none" stroke="${c}" stroke-opacity=".35" stroke-dasharray="2 5"/>
+    <g transform="translate(45 45) scale(2.5)" color="${c}" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">${ICON[k]||ICON.star}</g></svg>`;
+}
+
+/* ---------- the sigil on the profile circle ---------- */
+const _paintAvatar = paintAvatar;
+paintAvatar = function(){
+  _paintAvatar();
+  const b = $("#avatar-btn");
+  if(play.sigil && !b.querySelector("img")){
+    b.innerHTML = sigilSVG(play.sigil, 30); b.classList.add("sigiled");
+  } else b.classList.remove("sigiled");
+};
+
+/* ---------- sigil builder ---------- */
+let sb = null;
+function openSigil(){
+  sb = { step:0, sign:(play.sigil&&play.sigil.sign)||"star", aura:(play.sigil&&play.sigil.aura)||AURAS[0],
+         guide:(play.sigil&&play.sigil.guide)||null,
+         name:(play.sigil&&play.sigil.name)||(myProfile&&myProfile.display_name)||"" };
+  paintSigil(); $("#sigil-sheet").classList.add("show");
+}
+function closeSigil(){ $("#sigil-sheet").classList.remove("show"); }
+function paintSigil(){
+  const box = $("#sigil-body");
+  const steps = `<div class="sig-steps">${[0,1,2,3].map(i=>`<i class="${i<=sb.step?"on":""}"></i>`).join("")}</div>`;
+  const prev = `<div class="sig-preview">${sigilSVG(sb,130)}</div>`;
+  let body = "", can = true;
+  if(sb.step===0){
+    body = `<h3>Choose your sign</h3><p>The same eight signs the Wisdom Codes carry.</p>${prev}
+      <div class="sig-grid">${SIGILS.map(k=>`<button type="button" data-sign="${k}" class="${sb.sign===k?"on":""}" aria-label="${k}">${svg(k,26)}</button>`).join("")}</div>`;
+  } else if(sb.step===1){
+    body = `<h3>Choose your aura</h3><p>It colors your sigil, your reactions and your sky.</p>${prev}
+      <div class="sig-auras">${AURAS.map(c=>`<button type="button" data-aura="${c}" class="${sb.aura===c?"on":""}" style="background:${c}" aria-label="Aura color"></button>`).join("")}</div>`;
+  } else if(sb.step===2){
+    const beings = [...new Set(SESSIONS.flatMap(s=>(s.beings||[]).map(b=>b.name)).filter(Boolean))].sort();
+    can = !!sb.guide;
+    body = `<h3>Who guides you?</h3><p>A being whose words you'd like to hear first.</p>${prev}
+      <div class="sig-beings">${beings.map(b=>`<button type="button" data-guide="${esc(b)}" class="${sb.guide===b?"on":""}">${esc(b)}</button>`).join("")}</div>`;
+  } else if(sb.step===3){
+    body = `<h3>What should we call you?</h3><p>Your name goes on your Seeker card.</p>${prev}
+      <label for="sig-name">Your name</label><input type="text" id="sig-name" maxlength="24" value="${esc(sb.name)}" placeholder="Seeker">`;
+  } else {
+    body = `<h3>Your Seeker card</h3><p>Tap it to turn it over again.</p>
+      <div class="seeker" id="seeker" style="--aura:${sb.aura}" role="button" tabindex="0" aria-label="Turn your card">
+        <div class="f fb">${sigilSVG(sb,80)}</div>
+        <div class="f ff">${sigilSVG(sb,110)}<div class="nm">${esc(sb.name||"Seeker")}</div><div class="tt">${SIGIL_TITLE[sb.sign]}</div><div class="gd">Guided by ${esc(sb.guide)}</div></div>
+      </div>
+      <button class="play-btn" id="sig-done" type="button">Enter the Library</button>`;
+  }
+  const nav = sb.step<4 ? `<button class="play-btn" id="sig-next" type="button" ${can?"":"disabled"}>${sb.step<3?"Continue":"Reveal my card"}</button>
+      ${sb.step>0?'<button class="play-ghost" id="sig-back" type="button">Back</button>':'<button class="play-ghost" id="sig-later" type="button">Later</button>'}` : "";
+  box.innerHTML = (sb.step<4?steps:"") + body + nav;
+  if(sb.step===4){
+    const s=$("#seeker");
+    const flip=()=>{ s.classList.toggle("open"); if(s.classList.contains("open")){ buzz([10,40,20]); setTimeout(()=>burstAt(s,sb.aura,26,130),350); } };
+    s.addEventListener("click",flip); s.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); flip(); } });
+    setTimeout(flip,500);
+  }
+}
+$("#sigil-body").addEventListener("click", e=>{
+  const t=e.target;
+  const sg=t.closest("[data-sign]"); if(sg){ sb.sign=sg.dataset.sign; buzz(8); paintSigil(); return; }
+  const au=t.closest("[data-aura]"); if(au){ sb.aura=au.dataset.aura; buzz(8); paintSigil(); return; }
+  const gd=t.closest("[data-guide]"); if(gd){ sb.guide=gd.dataset.guide; buzz(8); paintSigil(); return; }
+  if(t.closest("#sig-back")){ sb.step--; paintSigil(); return; }
+  if(t.closest("#sig-later")){ play.sigilLater=true; savePlay(); closeSigil(); return; }
+  if(t.closest("#sig-next")){
+    if(sb.step===2 && !sb.guide) return;
+    if(sb.step===3){ sb.name=($("#sig-name").value||"").trim()||"Seeker";
+      play.sigil={sign:sb.sign,aura:sb.aura,guide:sb.guide,name:sb.name}; savePlay(); paintAvatar(); }
+    sb.step++; paintSigil(); return;
+  }
+  if(t.closest("#sig-done")){ closeSigil(); paintToday(); toast("Your sigil is set"); }
+});
+$("#sigil-body").addEventListener("input", e=>{ if(e.target.id==="sig-name") sb.name=e.target.value; });
+$("#sigil-sheet").addEventListener("click", e=>{ if(e.target.id==="sigil-sheet") closeSigil(); });
+$("#profile-sigil").addEventListener("click", ()=>{ $("#profile-sheet").classList.remove("show"); openSigil(); });
+
+/* ---------- today's Code + streak ---------- */
+function allCodes(){ return SESSIONS.flatMap(s=>(s.wisdom_codes||[]).map(c=>({...c, sn:s.session_number, stitle:s.title}))); }
+function todaysCode(){
+  const all = allCodes(); if(!all.length) return null;
+  const day = Math.floor(new Date(todayISO()+"T00:00:00").getTime()/864e5);
+  return all[day % all.length];
+}
+function streak(){
+  const set = new Set(play.days); let n=0; const d=new Date();
+  if(!set.has(todayISO())) d.setDate(d.getDate()-1);
+  while(true){ const iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    if(set.has(iso)){ n++; d.setDate(d.getDate()-1); } else break; }
+  return n;
+}
+function paintToday(){
+  const c = todaysCode(); const b=$("#today-card"); if(!c){ b.hidden=true; return; }
+  const drawn = play.days.includes(todayISO()), st = streak();
+  b.innerHTML = `<span class="sig">${drawn?svg(c.icon_key||"star",26):svg("star",26)}</span>
+    <span><span class="k">Today's Code</span><span class="t" style="display:block">${drawn?esc(c.title):"A Code is waiting"}</span>
+    <span class="s">${st?`${st}-day streak`:"Draw one each day to start a streak"}</span></span>
+    <span class="fl">${Array.from({length:7},(_,i)=>`<i class="${i<Math.min(st,7)?"on":""}"></i>`).join("")}</span>`;
+}
+function openToday(){
+  const c = todaysCode(); if(!c) return;
+  const drawn = play.days.includes(todayISO()), kept = play.sky.some(x=>x.id===c.id);
+  $("#today-body").innerHTML = `
+    <div class="day-stage ${drawn?"open":""}" id="day-stage" role="button" tabindex="0" aria-label="Turn over today's Code">
+      <div class="f fb">${svg("star",54)}<div class="t">A Code is waiting</div><small>Tap to draw</small></div>
+      <div class="f ff">${svg(c.icon_key||"star",40)}<div class="kick">${esc(c.stitle)}</div><h4>${esc(c.title)}</h4><q>“${esc(c.quote)}”</q><div class="a">${esc(c.attribution)}</div></div>
+    </div>
+    <div id="today-actions">${drawn?todayActions(c,kept):""}</div>`;
+  $("#today-sheet").classList.add("show");
+}
+function todayActions(c, kept){
+  return `<button class="play-btn" id="today-keep" type="button" ${kept?"disabled":""}>${kept?"In your sky":"Keep it in my sky"}</button>
+    <button class="play-ghost" id="today-open" type="button">Open the session</button>`;
+}
+function drawToday(){
+  const c=todaysCode(); const st=$("#day-stage");
+  if(play.days.includes(todayISO())) return;
+  play.days.push(todayISO()); play.days = play.days.slice(-60); savePlay();
+  st.classList.add("open"); buzz([10,30,10]);
+  setTimeout(()=>{ burstAt(st,"#EFCB7C",22,110); $("#today-actions").innerHTML=todayActions(c,false); paintToday(); toast(`${streak()}-day streak`); },550);
+}
+function keepCode(c, fromEl){
+  if(play.sky.some(x=>x.id===c.id)) return;
+  play.sky.push({id:c.id, sn:c.sn, title:c.title, icon:c.icon_key||"star", who:c.attribution}); savePlay();
+  if(fromEl) burstAt(fromEl, aura(), 14, 80); buzz(12);
+  if(play.sky.length>=3 && !play.celebrated){ play.celebrated=true; savePlay(); setTimeout(celebrate,400); }
+  else toast("Added to your sky");
+}
+$("#today-card").addEventListener("click", openToday);
+$("#today-body").addEventListener("click", e=>{
+  if(e.target.closest("#day-stage")) { drawToday(); return; }
+  if(e.target.closest("#today-keep")){ keepCode(todaysCode(), e.target); $("#today-actions").innerHTML=todayActions(todaysCode(),true); return; }
+  if(e.target.closest("#today-open")){ $("#today-sheet").classList.remove("show"); selectSession(todaysCode().sn); }
+});
+$("#today-body").addEventListener("keydown", e=>{ if(e.target.id==="day-stage" && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); drawToday(); } });
+$("#today-close").addEventListener("click", ()=>$("#today-sheet").classList.remove("show"));
+$("#today-sheet").addEventListener("click", e=>{ if(e.target.id==="today-sheet") $("#today-sheet").classList.remove("show"); });
+
+/* ---------- celebration ---------- */
+function celebrate(){
+  const ov=$("#celebrate");
+  $("#celebrate-sig").innerHTML = sigilSVG(play.sigil||{aura:"#EFCB7C",sign:"star"}, 100);
+  ov.hidden=false; buzz([20,60,20,60,40]);
+  const r=ov.getBoundingClientRect(); const cols=["#EFCB7C",aura(),"#EFDFC0"];
+  for(let i=0;i<4;i++) setTimeout(()=>burst(r.left+r.width*(.2+.2*i), r.top+r.height*.35, cols[i%3], 22, 140), i*170);
+}
+$("#celebrate-go").addEventListener("click", ()=>{ $("#celebrate").hidden=true; openSky(); });
+
+/* ---------- resonance: press and hold the heart ---------- */
+let holdT=null, held=false;
+function resTarget(corner){ return corner.id==="card-like" ? sessionTarget() : currentTarget(); }
+function paintRes(){
+  [["#card-like",sessionTarget()],["#wc-like",currentTarget()]].forEach(([sel,t])=>{
+    const corner=$(sel); if(!corner) return;
+    const host=corner.parentElement; host.querySelectorAll(":scope > .res-mark").forEach(m=>m.remove());
+    const k = t && play.res[likeKey(t)];
+    if(k){ const m=document.createElement("span"); m.className="res-mark"; m.innerHTML=svg(k,16); m.title=RESONANCE.find(r=>r.k===k)?.label||""; host.appendChild(m); }
+  });
+}
+function closeTray(){ $$(".res-tray").forEach(t=>t.remove()); }
+function openTray(corner){
+  closeTray(); held=true; buzz(15);
+  const t=resTarget(corner); if(!t) return;
+  const r=corner.getBoundingClientRect();
+  const tray=document.createElement("div"); tray.className="res-tray"; tray.setAttribute("role","menu");
+  tray.innerHTML = RESONANCE.map(x=>`<button type="button" role="menuitem" data-res="${x.k}" aria-label="${x.label}">${svg(x.k,22)}<span>${x.label}</span></button>`).join("");
+  document.body.appendChild(tray);
+  const w=tray.offsetWidth; tray.style.left=Math.max(8, Math.min(innerWidth-w-8, r.right-w))+"px"; tray.style.top=(r.bottom+6)+"px";
+  tray.addEventListener("click", ev=>{
+    const b=ev.target.closest("[data-res]"); if(!b) return;
+    const key=likeKey(t);
+    if(play.res[key]===b.dataset.res) delete play.res[key]; else { play.res[key]=b.dataset.res; burstAt(b, aura(), 16, 70); buzz(12); }
+    savePlay(); closeTray(); paintRes(); toast(play.res[key] ? RESONANCE.find(x=>x.k===b.dataset.res).label : "Reaction removed");
+    if(play.res[key] && me && !mine.loved.has(key)) toggleLike(t, corner);
+  });
+  tray.querySelector("button").focus();
+}
+["#card-like","#wc-like"].forEach(sel=>{
+  const corner=$(sel); if(!corner) return; const heart=corner.querySelector(".lc-heart");
+  heart.addEventListener("pointerdown", ()=>{ held=false; holdT=setTimeout(()=>openTray(corner),450); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>heart.addEventListener(ev,()=>clearTimeout(holdT)));
+  heart.addEventListener("contextmenu", e=>e.preventDefault());
+  heart.addEventListener("click", e=>{
+    if(held){ held=false; e.stopImmediatePropagation(); e.preventDefault(); return; }
+    if(!corner.classList.contains("on")) burstAt(heart, aura(), 14, 70);
+  }, true);
+  heart.addEventListener("keydown", e=>{ if(e.key==="ArrowDown"||e.key==="ContextMenu"){ e.preventDefault(); openTray(corner); } });
+});
+document.addEventListener("click", e=>{ if(!e.target.closest(".res-tray") && !e.target.closest(".lc-heart")) closeTray(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeTray(); });
+const _paintKeep = paintKeepState;
+paintKeepState = function(){ _paintKeep(); paintRes(); };
+
+/* ---------- your sky (the Community tab) ---------- */
+function openSky(){
+  $$(".tab").forEach(x=>x.classList.toggle("active", x.dataset.tab==="community"));
+  const p = play.sigil, st = streak(), stars = play.sky;
+  const pts=[[16,52],[30,26],[46,44],[62,18],[76,40],[88,24],[58,58],[36,60],[22,34],[70,56]];
+  const dust = Array.from({length:46},(_,i)=>`<circle cx="${(i*37)%100}" cy="${(i*53)%66+2}" r="${(i%3)*.12+.15}" fill="#EFDFC0" opacity="${.2+(i%4)*.12}"/>`).join("");
+  const S = stars.map((s,i)=>({x:pts[i%pts.length][0], y:pts[i%pts.length][1], s}));
+  const lines = S.slice(1).map((s,i)=>`<line x1="${S[i].x}" y1="${S[i].y}" x2="${s.x}" y2="${s.y}" stroke="${aura()}" stroke-opacity=".55" stroke-width=".35"/>`).join("");
+  const dots = S.map(s=>`<circle cx="${s.x}" cy="${s.y}" r="2.4" fill="${aura()}" opacity=".25"/><circle cx="${s.x}" cy="${s.y}" r="1" fill="#FFF3D6"/>`).join("");
+  const listening = (typeof playingSession!=="undefined" && playingSession && !audio.paused) ? playingSession : null;
+  $("#sky-body").innerHTML = `
+    <div class="sky-head">${p?sigilSVG(p,96):sigilSVG({aura:"#8A6E32",sign:"star"},96)}
+      <div class="nm">${esc(p?p.name:"Seeker")}</div>
+      <div class="tt">${p?SIGIL_TITLE[p.sign]:"No sigil yet"}</div>
+      <div class="gd">${p?`Guided by ${esc(p.guide)}`:""}</div>
+      ${p?"":'<button class="play-btn" id="sky-sigil" type="button" style="margin-top:12px">Build your sigil</button>'}
+    </div>
+    ${listening?`<div class="now-me"><span class="eq"><i></i><i></i><i></i></span>You're listening to ${esc(listening.title)}</div>`:""}
+    <div class="sky-stats"><div><b>${st}</b><span>day streak</span></div><div><b>${stars.length}</b><span>Codes in your sky</span></div><div><b>${Object.keys(play.res).length}</b><span>reactions</span></div></div>
+    <div class="sky-box"><svg viewBox="0 0 100 68">${dust}${lines}${dots}</svg><span class="cap">${stars.length?`${stars.length} star${stars.length>1?"s":""} · keep 3 for your first constellation`:"Keep today's Code to light your first star"}</span></div>
+    <div class="sky-list">${stars.map(s=>`<button type="button" data-sky="${s.sn}">${svg(s.icon,20)}<span>${esc(s.title)}<small>${esc(s.who)}</small></span></button>`).join("")}</div>
+    <div class="sky-sec">Your Circle</div>
+    <div class="circle-note">Coming next: see which friends are listening right now, and echo a Code onto a friend's card. Until then, send a friend today's Code.</div>
+    <button class="play-btn" id="sky-send" type="button">Copy today's Code to send</button>
+    ${p?'<button class="play-ghost" id="sky-rebuild" type="button">Rebuild my sigil</button>':""}`;
+  show("sky");
+}
+$("#sky-body").addEventListener("click", e=>{
+  if(e.target.closest("#sky-sigil") || e.target.closest("#sky-rebuild")){ openSigil(); return; }
+  const s=e.target.closest("[data-sky]"); if(s){ selectSession(+s.dataset.sky); return; }
+  if(e.target.closest("#sky-send")){ const c=todaysCode(); if(c) copyText(`“${c.quote}” — ${c.attribution}\n${location.origin}${location.pathname}#${c.sn}`).then(()=>toast("Copied — paste it to a friend"),()=>toast("Could not copy")); }
+});
+
+
+/* first visit: offer the sigil once */
+paintToday();
+if(!play.sigil && !play.sigilLater && !location.hash) setTimeout(openSigil, 1400);
 
 /* ---------- go ---------- */
 seedStars();
