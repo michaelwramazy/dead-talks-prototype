@@ -1229,6 +1229,23 @@ body{
 @keyframes eqb{0%,100%{height:3px}50%{height:10px}}
 @media (prefers-reduced-motion:reduce){.day-stage .f,.seeker .f{transition:none}.now-me .eq i{animation:none}}
 
+/* the Circle (migration 032) */
+.circle-row{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(212,169,78,.18)}
+.circle-face{width:40px;height:40px;border-radius:50%;overflow:hidden;display:grid;place-items:center;border:1px solid rgba(212,169,78,.5);background:#0B1229;font-size:13px;color:var(--parchment)}
+.circle-face img,.circle-face svg{width:100%;height:100%;object-fit:cover}
+.circle-row b{display:block;font-weight:500;font-size:14px;color:var(--parchment)}
+.circle-row .st{font-size:12px;color:rgba(239,223,192,.55)}
+.circle-row .st.live{color:#7FC6C0;display:flex;align-items:center;gap:6px}
+.circle-row .acts{display:flex;gap:6px;align-items:center}
+.mini-btn{padding:6px 11px;border-radius:999px;border:1px solid var(--gold);background:none;color:var(--gold-bright);font:12px var(--body);cursor:pointer}
+.mini-btn.quiet{border-color:rgba(239,223,192,.25);color:rgba(239,223,192,.6)}
+.echo-card{border:1px dashed rgba(212,169,78,.55);border-radius:12px;padding:10px 12px;margin:8px 0;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
+.echo-card q{display:block;font:italic 500 16px/1.3 var(--display);color:var(--parchment);quotes:none}
+.echo-card small{color:rgba(239,223,192,.6);font-size:11.5px}
+.echo-card button{background:none;border:0;color:rgba(239,223,192,.5);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px}
+.pick-list button{display:grid;grid-template-columns:22px 1fr;gap:10px;width:100%;padding:10px 4px;border:0;border-bottom:1px solid rgba(212,169,78,.18);background:none;color:var(--parchment);text-align:left;font:14px var(--body);cursor:pointer}
+.pick-list button:hover{background:rgba(212,169,78,.08)}
+.pick-list small{display:block;color:rgba(239,223,192,.6);font-size:12px}
 </style>
 </head>
 <body>
@@ -1716,6 +1733,9 @@ body{
   </div>
   <div class="sheet" id="sigil-sheet">
     <div class="sheet-inner" id="sigil-body"></div>
+  </div>
+  <div class="sheet" id="circle-sheet">
+    <div class="sheet-inner" id="circle-body"></div>
   </div>
   <div class="celebrate" id="celebrate" hidden role="dialog" aria-label="Constellation unlocked">
     <div><div id="celebrate-sig"></div><h3>Your first constellation</h3>
@@ -32564,15 +32584,16 @@ function openSky(){
     <div class="sky-box"><svg viewBox="0 0 100 68">${dust}${lines}${dots}</svg><span class="cap">${stars.length?`${stars.length} star${stars.length>1?"s":""} · keep 3 for your first constellation`:"Keep today's Code to light your first star"}</span></div>
     <div class="sky-list">${stars.map(s=>`<button type="button" data-sky="${s.sn}">${svg(s.icon,20)}<span>${esc(s.title)}<small>${esc(s.who)}</small></span></button>`).join("")}</div>
     <div class="sky-sec">Your Circle</div>
-    <div class="circle-note">Coming next: see which friends are listening right now, and echo a Code onto a friend's card. Until then, send a friend today's Code.</div>
-    <button class="play-btn" id="sky-send" type="button">Copy today's Code to send</button>
+    <div id="circle-box"></div>
+    <button class="play-ghost" id="sky-send" type="button">Copy today's Code to send outside the app</button>
     ${p?'<button class="play-ghost" id="sky-rebuild" type="button">Rebuild my sigil</button>':""}`;
   show("sky");
+  paintCircle();
 }
 $("#sky-body").addEventListener("click", e=>{
   if(e.target.closest("#sky-sigil") || e.target.closest("#sky-rebuild")){ openSigil(); return; }
   const s=e.target.closest("[data-sky]"); if(s){ selectSession(+s.dataset.sky); return; }
-  if(e.target.closest("#sky-send")){ const c=todaysCode(); if(c) copyText(`“${c.quote}” — ${c.attribution}\n${location.origin}${location.pathname}#${c.sn}`).then(()=>toast("Copied — paste it to a friend"),()=>toast("Could not copy")); }
+  if(e.target.closest("#sky-send")){ const c=todaysCode(); if(c) copyText(`“${c.quote}” — ${c.attribution}\n${location.origin}${location.pathname}?s=${c.sn}`).then(()=>toast("Copied — paste it to a friend"),()=>toast("Could not copy")); }
 });
 
 
@@ -32636,8 +32657,148 @@ async function syncPlay(){
   paintAvatar(); paintRes(); paintToday();
   if($("#view-sky").classList.contains("active")) openSky();
 }
+
+/* ---------- the Circle (migration 032) ----------
+   Friends join each other's Circle through a personal link (?circle=CODE).
+   Inside it: who is listening right now, and Codes echoed onto your card. */
+let circle = { friends:[], echoesIn:[], loaded:false };
+const codeById = id => { for(const s of SESSIONS){ const c=(s.wisdom_codes||[]).find(w=>w.id===id); if(c) return {...c, sn:s.session_number, stitle:s.title}; } return null; };
+function faceFor(p){
+  if(p && p.avatar_path && /^https?:/.test(p.avatar_path)) return `<img src="${esc(p.avatar_path)}" alt="" referrerpolicy="no-referrer">`;
+  if(p && p.sigil && p.sigil.sign) return sigilSVG(p.sigil, 40);
+  return esc(initials(p && p.display_name));
+}
+async function loadCircle(){
+  circle = { friends:[], echoesIn:[], loaded:true };
+  if(!me || !db) return;
+  const m = await db.from("circle_members").select("friend_id").eq("user_id", me.id);
+  const ids = (m.data||[]).map(r=>r.friend_id);
+  const ech = (await db.from("echoes").select("id,from_user,code_id,created_at").eq("to_user", me.id).order("created_at",{ascending:false})).data || [];
+  const want = [...new Set([...ids, ...ech.map(e=>e.from_user)])];
+  const profs = want.length ? ((await db.from("profiles").select("id,display_name,avatar_path,sigil").in("id", want)).data || []) : [];
+  const pres  = ids.length ? ((await db.from("presence").select("user_id,session_number,kind,title,updated_at").in("user_id", ids)).data || []) : [];
+  const pmap = Object.fromEntries(profs.map(p=>[p.id,p]));
+  const fresh = r => r && r.title && (Date.now() - new Date(r.updated_at).getTime()) < 4*60e3;
+  circle.friends = ids.map(id => ({ id, p: pmap[id] || {display_name:"A friend"}, now: fresh(pres.find(x=>x.user_id===id)) ? pres.find(x=>x.user_id===id) : null }))
+    .sort((a,b)=> (b.now?1:0)-(a.now?1:0));
+  circle.echoesIn = ech.map(e => ({...e, from:(pmap[e.from_user]||{}).display_name || "A friend", code:codeById(e.code_id)})).filter(e=>e.code);
+}
+function circleHTML(){
+  if(!me) return `<div class="circle-note">Sign in to build your Circle: invite friends, see who is listening, and echo Codes onto each other's cards.</div>
+    <button class="play-btn" id="circle-signin" type="button">Sign in</button>`;
+  const friends = circle.friends.length ? circle.friends.map(f=>`<div class="circle-row">
+      <span class="circle-face">${faceFor(f.p)}</span>
+      <span><b>${esc(f.p.display_name||"A friend")}</b>${f.now
+        ? `<span class="st live"><span class="now-me" style="margin:0"><span class="eq"><i></i><i></i><i></i></span></span>listening to ${esc(f.now.title)}</span>`
+        : `<span class="st">Quiet right now</span>`}</span>
+      <span class="acts"><button class="mini-btn" type="button" data-echo="${f.id}">Echo a Code</button>
+        <button class="mini-btn quiet" type="button" data-leave="${f.id}" aria-label="Remove ${esc(f.p.display_name||"friend")} from your Circle">✕</button></span>
+    </div>`).join("")
+    : `<div class="circle-note">Your Circle is empty. Send your invite link to a friend; when they open it and join, you'll each appear in the other's Circle.</div>`;
+  const echoes = circle.echoesIn.length ? `<div class="sky-sec" style="font-size:18px">Echoes on your card</div>` + circle.echoesIn.map(e=>`<div class="echo-card">
+      <span><q>“${esc(e.code.quote)}”</q><small>${esc(e.code.attribution)} · echoed by ${esc(e.from)}</small></span>
+      <button type="button" data-unecho="${e.id}" aria-label="Remove this echo">×</button></div>`).join("") : "";
+  return friends + `<button class="play-btn" id="circle-invite" type="button" style="margin-top:12px">Copy my invite link</button>` + echoes;
+}
+async function paintCircle(){
+  const box = $("#circle-box"); if(!box) return;
+  if(me && !circle.loaded) box.innerHTML = `<div class="circle-note">Loading your Circle…</div>`;
+  if(me) await loadCircle();
+  if($("#circle-box")) $("#circle-box").innerHTML = circleHTML();
+}
+function openEchoPicker(friendId){
+  const f = circle.friends.find(x=>x.id===friendId); if(!f) return;
+  const t = todaysCode();
+  const opts = [...(t ? [{id:t.id, title:t.title, who:t.attribution, icon:t.icon_key||"star", tag:"Today's Code"}] : []),
+                ...play.sky.filter(s=>!t || s.id!==t.id).map(s=>({...s, tag:"From your sky"}))];
+  $("#circle-body").innerHTML = `<h3>Echo a Code to ${esc(f.p.display_name||"your friend")}</h3>
+    <p>It will appear on their card, with your name.</p>
+    <div class="pick-list">${opts.map(o=>`<button type="button" data-send="${o.id}" data-to="${friendId}">${svg(o.icon,20)}<span>${esc(o.title)}<small>${esc(o.who)} · ${o.tag}</small></span></button>`).join("")
+      || '<p>Keep a Code in your sky first, then you can echo it.</p>'}</div>
+    <button class="ghost" id="circle-close" type="button">Close</button>`;
+  $("#circle-sheet").classList.add("show");
+}
+async function circleInvite(){
+  const { data, error } = await db.rpc("my_circle_code");
+  if(error || !data){ toast("Could not make your invite link"); return; }
+  const link = `${location.origin}${location.pathname}?circle=${data}`;
+  copyText(link).then(()=>toast("Invite link copied — send it to a friend"), ()=>toast(link));
+}
+$("#sky-body").addEventListener("click", async e=>{
+  if(e.target.closest("#circle-signin")){ openAuth(); return; }
+  if(e.target.closest("#circle-invite")){ circleInvite(); return; }
+  const ec=e.target.closest("[data-echo]"); if(ec){ openEchoPicker(ec.dataset.echo); return; }
+  const lv=e.target.closest("[data-leave]"); if(lv){
+    const f=circle.friends.find(x=>x.id===lv.dataset.leave); const name=(f&&f.p.display_name)||"this friend";
+    if(lv.dataset.sure!=="1"){ lv.dataset.sure="1"; lv.textContent="Remove?"; setTimeout(()=>{ if(lv.isConnected){ lv.dataset.sure=""; lv.textContent="✕"; } },3000); return; }
+    const { error } = await db.rpc("leave_circle", { p_friend: lv.dataset.leave });
+    toast(error ? "Could not remove that" : `${name} is out of your Circle`); paintCircle(); return; }
+  const un=e.target.closest("[data-unecho]"); if(un){
+    const { error } = await db.from("echoes").delete().eq("id", un.dataset.unecho);
+    toast(error ? "Could not remove that" : "Echo removed"); paintCircle(); return; }
+});
+$("#circle-body").addEventListener("click", async e=>{
+  if(e.target.closest("#circle-close")){ $("#circle-sheet").classList.remove("show"); return; }
+  const s=e.target.closest("[data-send]"); if(s){
+    const { error } = await db.from("echoes").insert({ from_user: me.id, to_user: s.dataset.to, code_id: s.dataset.send });
+    $("#circle-sheet").classList.remove("show");
+    if(error) toast(/duplicate|unique/i.test(error.message) ? "That Code is already on their card" : "Could not send that");
+    else { burstAt($("#sky-body"), aura(), 18, 90); buzz(12); toast("Echoed onto their card"); }
+    return; }
+  if(e.target.closest("#circle-join")){
+    const code = e.target.closest("#circle-join").dataset.code;
+    const { error } = await db.rpc("join_circle", { p_code: code });
+    $("#circle-sheet").classList.remove("show"); clearInviteParam();
+    if(error){ toast("That invite didn't work"); return; }
+    buzz([10,40,20]); toast("You're in each other's Circle now"); openSky(); return; }
+  if(e.target.closest("#circle-notnow")){ $("#circle-sheet").classList.remove("show"); clearInviteParam(); }
+});
+$("#circle-sheet").addEventListener("click", e=>{ if(e.target.id==="circle-sheet") $("#circle-sheet").classList.remove("show"); });
+
+/* an invite link: ?circle=CODE */
+const inviteCode = (()=>{ const c = new URLSearchParams(location.search).get("circle"); return c && /^[a-f0-9]{8,40}$/.test(c) ? c : null; })();
+function clearInviteParam(){ try{ const u=new URL(location.href); u.searchParams.delete("circle"); history.replaceState(null,"",u.pathname+u.search+u.hash); }catch(e){} }
+async function handleInvite(){
+  if(!inviteCode || handleInvite.done) return;
+  if(!me){
+    $("#circle-body").innerHTML = `<h3>You're invited to a Circle</h3><p>Sign in or create an account to join, then you'll see each other listening and can echo Codes onto each other's cards.</p>
+      <button class="primary" id="circle-auth" type="button">Sign in to join</button><button class="ghost" id="circle-notnow" type="button">Not now</button>`;
+    $("#circle-sheet").classList.add("show");
+    $("#circle-auth").addEventListener("click", ()=>{ $("#circle-sheet").classList.remove("show"); openAuth(); });
+    return;
+  }
+  handleInvite.done = true;
+  const { data } = await db.rpc("circle_invite_owner", { p_code: inviteCode });
+  const o = data && data[0];
+  if(!o){ toast("That invite link has expired"); clearInviteParam(); return; }
+  if(o.owner_id === me.id){ clearInviteParam(); toast("That's your own invite link — send it to a friend"); return; }
+  if(o.already){ clearInviteParam(); toast(`${o.display_name} is already in your Circle`); return; }
+  $("#circle-body").innerHTML = `<div style="text-align:center">${o.sigil && o.sigil.sign ? sigilSVG(o.sigil, 96) : ""}</div>
+    <h3>Join ${esc(o.display_name)}'s Circle?</h3>
+    <p>You'll each appear in the other's Circle: you can see when the other is listening, and echo Codes onto each other's cards. Either of you can leave at any time.</p>
+    <button class="primary" id="circle-join" type="button" data-code="${inviteCode}">Join</button>
+    <button class="ghost" id="circle-notnow" type="button">Not now</button>`;
+  $("#circle-sheet").classList.add("show");
+}
+
+/* listening now: shared with your Circle while audio plays */
+let presT = null;
+async function setPresence(on){
+  if(!me || !db) return;
+  if(on && playingSession){
+    const kind = ["episode","journey","song"].includes(playingKind) ? playingKind : "episode";
+    await db.from("presence").upsert({ user_id: me.id, session_number: playingSession.session_number, kind,
+      title: String(playingSession.title||"").slice(0,160), updated_at: new Date().toISOString() });
+  } else {
+    await db.from("presence").delete().eq("user_id", me.id);
+  }
+}
+audio.addEventListener("play", ()=>{ setPresence(true); clearInterval(presT); presT = setInterval(()=>{ if(!audio.paused) setPresence(true); }, 60000); });
+["pause","ended"].forEach(ev=>audio.addEventListener(ev, ()=>{ clearInterval(presT); setPresence(false); }));
+setInterval(()=>{ if($("#view-sky").classList.contains("active") && me) paintCircle(); }, 60000);
+
 const _refreshAccount = refreshAccount;
-refreshAccount = async function(){ await _refreshAccount(); await syncPlay(); };
+refreshAccount = async function(){ await _refreshAccount(); await syncPlay(); circle.loaded = false; handleInvite(); };
 
 /* first visit: offer the sigil once */
 paintToday();
