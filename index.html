@@ -31887,7 +31887,7 @@ async function loadProfile(){
   myProfile = null;
   if(!me) return;
   const { data } = await db.from("profiles")
-    .select("display_name,avatar_path,about").eq("id", me.id).maybeSingle();
+    .select("display_name,avatar_path,about,sigil").eq("id", me.id).maybeSingle();
   myProfile = data || null;
   await adoptFromProvider();
 }
@@ -32416,7 +32416,7 @@ $("#sigil-body").addEventListener("click", e=>{
   if(t.closest("#sig-next")){
     if(sb.step===2 && !sb.guide) return;
     if(sb.step===3){ sb.name=($("#sig-name").value||"").trim()||"Seeker";
-      play.sigil={sign:sb.sign,aura:sb.aura,guide:sb.guide,name:sb.name}; savePlay(); paintAvatar(); }
+      play.sigil={sign:sb.sign,aura:sb.aura,guide:sb.guide,name:sb.name}; savePlay(); paintAvatar(); saveSigilToAccount(); }
     sb.step++; paintSigil(); return;
   }
   if(t.closest("#sig-done")){ closeSigil(); paintToday(); toast("Your sigil is set"); }
@@ -32520,7 +32520,8 @@ function openTray(corner){
     const b=ev.target.closest("[data-res]"); if(!b) return;
     const key=likeKey(t);
     if(play.res[key]===b.dataset.res) delete play.res[key]; else { play.res[key]=b.dataset.res; burstAt(b, aura(), 16, 70); buzz(12); }
-    savePlay(); closeTray(); paintRes(); toast(play.res[key] ? RESONANCE.find(x=>x.k===b.dataset.res).label : "Reaction removed");
+    savePlay(); closeTray(); paintRes(); pushRes(key, play.res[key]||null);
+    toast(play.res[key] ? RESONANCE.find(x=>x.k===b.dataset.res).label : "Reaction removed");
     if(play.res[key] && me && !mine.loved.has(key)) toggleLike(t, corner);
   });
   tray.querySelector("button").focus();
@@ -32575,9 +32576,50 @@ $("#sky-body").addEventListener("click", e=>{
 });
 
 
+
+/* ---------- keep sigil and reactions in the account (migration 030) ----------
+   Signed in, the account is the source: its sigil and reactions replace what
+   this device had, and anything made on this device before signing in is
+   carried up. Signed out, everything stays on the device as before. */
+const RES_DB = {flame:"lit",leaf:"softened",star:"awakened",wave:"moved",key:"unlocked"};
+const RES_UI = Object.fromEntries(Object.entries(RES_DB).map(([a,b])=>[b,a]));
+async function saveSigilToAccount(){
+  if(!me || !db || !play.sigil) return;
+  const { error } = await db.from("profiles").update({ sigil: play.sigil }).eq("id", me.id);
+  if(error){ toast("Your sigil is saved on this device only"); return; }
+  if(myProfile) myProfile.sigil = play.sigil;
+}
+async function pushRes(key, kind){
+  if(!me || !db) return;
+  const i = key.indexOf(":"), type = key.slice(0,i), id = key.slice(i+1);
+  await db.from("reactions").delete().eq("user_id", me.id).eq("target_type", type)
+    .eq("target_id", id).in("reaction", Object.values(RES_DB));
+  if(!kind) return;
+  const { error } = await db.from("reactions").insert({ user_id: me.id, target_type: type, target_id: id, reaction: RES_DB[kind] });
+  if(error) toast("That reaction is saved on this device only");
+}
+async function syncPlay(){
+  if(!me || !db) return;
+  if(myProfile && myProfile.sigil && myProfile.sigil.sign){ play.sigil = myProfile.sigil; savePlay(); }
+  else if(play.sigil) await saveSigilToAccount();
+  const { data, error } = await db.from("reactions").select("target_type,target_id,reaction")
+    .eq("user_id", me.id).in("reaction", Object.values(RES_DB));
+  if(!error){
+    const acct = {};
+    (data||[]).forEach(r => { acct[r.target_type + ":" + r.target_id] = RES_UI[r.reaction]; });
+    const localOnly = Object.entries(play.res).filter(([k]) => !(k in acct));
+    for(const [k,v] of localOnly) await pushRes(k, v);
+    play.res = { ...Object.fromEntries(localOnly), ...acct }; savePlay();
+  }
+  paintAvatar(); paintRes();
+  if($("#view-sky").classList.contains("active")) openSky();
+}
+const _refreshAccount = refreshAccount;
+refreshAccount = async function(){ await _refreshAccount(); await syncPlay(); };
+
 /* first visit: offer the sigil once */
 paintToday();
-if(!play.sigil && !play.sigilLater && !location.hash) setTimeout(openSigil, 1400);
+if(!play.sigil && !play.sigilLater && !location.hash) setTimeout(()=>{ if(!play.sigil) openSigil(); }, 2200);
 
 /* ---------- go ---------- */
 seedStars();
