@@ -32465,15 +32465,15 @@ function todayActions(c, kept){
 function drawToday(){
   const c=todaysCode(); const st=$("#day-stage");
   if(play.days.includes(todayISO())) return;
-  play.days.push(todayISO()); play.days = play.days.slice(-60); savePlay();
+  play.days.push(todayISO()); play.days = play.days.slice(-400); savePlay(); pushPlayState();
   st.classList.add("open"); buzz([10,30,10]);
   setTimeout(()=>{ burstAt(st,"#EFCB7C",22,110); $("#today-actions").innerHTML=todayActions(c,false); paintToday(); toast(`${streak()}-day streak`); },550);
 }
 function keepCode(c, fromEl){
   if(play.sky.some(x=>x.id===c.id)) return;
-  play.sky.push({id:c.id, sn:c.sn, title:c.title, icon:c.icon_key||"star", who:c.attribution}); savePlay();
+  play.sky.push({id:c.id, sn:c.sn, title:c.title, icon:c.icon_key||"star", who:c.attribution}); savePlay(); pushPlayState();
   if(fromEl) burstAt(fromEl, aura(), 14, 80); buzz(12);
-  if(play.sky.length>=3 && !play.celebrated){ play.celebrated=true; savePlay(); setTimeout(celebrate,400); }
+  if(play.sky.length>=3 && !play.celebrated){ play.celebrated=true; savePlay(); pushPlayState(); setTimeout(celebrate,400); }
   else toast("Added to your sky");
 }
 $("#today-card").addEventListener("click", openToday);
@@ -32598,8 +32598,30 @@ async function pushRes(key, kind){
   const { error } = await db.from("reactions").insert({ user_id: me.id, target_type: type, target_id: id, reaction: RES_DB[kind] });
   if(error) toast("That reaction is saved on this device only");
 }
+/* the streak and the sky: one private row per person (migration 031) */
+let pushStateT = null;
+async function pushPlayStateNow(){
+  if(!me || !db) return;
+  const { error } = await db.from("play_state").upsert({ user_id: me.id, days: play.days, sky: play.sky,
+    celebrated: !!play.celebrated, updated_at: new Date().toISOString() });
+  if(error) toast("Your streak is saved on this device only");
+}
+function pushPlayState(){ if(!me || !db) return; clearTimeout(pushStateT); pushStateT = setTimeout(pushPlayStateNow, 400); }
+async function syncPlayState(){
+  const { data, error } = await db.from("play_state").select("days,sky,celebrated").eq("user_id", me.id).maybeSingle();
+  if(error) return;
+  const row = data || { days:[], sky:[], celebrated:false };
+  const days = [...new Set([...(row.days||[]), ...play.days])].sort().slice(-400);
+  const seen = new Set();
+  const sky = [...(row.sky||[]), ...play.sky].filter(x => x && x.id && !seen.has(x.id) && seen.add(x.id));
+  const celebrated = !!(row.celebrated || play.celebrated);
+  const changed = days.length !== (row.days||[]).length || sky.length !== (row.sky||[]).length || celebrated !== !!row.celebrated || !data;
+  play.days = days; play.sky = sky; play.celebrated = celebrated; savePlay();
+  if(changed) await pushPlayStateNow();
+}
 async function syncPlay(){
   if(!me || !db) return;
+  await syncPlayState();
   if(myProfile && myProfile.sigil && myProfile.sigil.sign){ play.sigil = myProfile.sigil; savePlay(); }
   else if(play.sigil) await saveSigilToAccount();
   const { data, error } = await db.from("reactions").select("target_type,target_id,reaction")
@@ -32611,7 +32633,7 @@ async function syncPlay(){
     for(const [k,v] of localOnly) await pushRes(k, v);
     play.res = { ...Object.fromEntries(localOnly), ...acct }; savePlay();
   }
-  paintAvatar(); paintRes();
+  paintAvatar(); paintRes(); paintToday();
   if($("#view-sky").classList.contains("active")) openSky();
 }
 const _refreshAccount = refreshAccount;
