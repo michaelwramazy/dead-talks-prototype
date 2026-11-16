@@ -1687,6 +1687,26 @@ body{
       <button class="primary" id="profile-save">Save</button>
       <button class="danger" id="profile-signout">Sign out</button>
       <button class="ghost" id="profile-close">Close</button>
+      <button type="button" class="ghost linky" id="profile-delete">Delete my account</button>
+    </div>
+  </div>
+
+  <!-- ==== DELETE ACCOUNT ============ -->
+  <div class="sheet" id="delete-sheet">
+    <div class="sheet-inner" id="delete-step1">
+      <h3>Delete your account?</h3>
+      <p>You'll lose your saved and loved Codes, your reflections, your Circle, and your sign and streak.</p>
+      <p>Your account is hidden straight away and erased for good after 7 days. Sign in again before then and it comes back.</p>
+      <button class="primary" id="delete-keep">Keep my account</button>
+      <button class="danger" id="delete-next">Continue</button>
+    </div>
+    <div class="sheet-inner" id="delete-step2" hidden>
+      <h3>Are you sure?</h3>
+      <p>Type DELETE to confirm.</p>
+      <input type="text" id="delete-word" autocomplete="off" autocapitalize="characters" placeholder="DELETE">
+      <p class="counter" id="delete-err"></p>
+      <button class="danger" id="delete-go">Delete my account</button>
+      <button class="ghost" id="delete-cancel">Cancel</button>
     </div>
   </div>
 
@@ -33499,8 +33519,14 @@ async function loadProfile(){
   myProfile = null;
   if(!me) return;
   const { data } = await db.from("profiles")
-    .select("display_name,avatar_path,about,sigil").eq("id", me.id).maybeSingle();
+    .select("display_name,avatar_path,about,sigil,delete_requested_at").eq("id", me.id).maybeSingle();
   myProfile = data || null;
+  if(myProfile && myProfile.delete_requested_at){
+    // signed in during the 7-day window: the account comes back
+    await db.rpc("restore_account");
+    myProfile.delete_requested_at = null;
+    toast("Welcome back. Your account is restored.");
+  }
   await adoptFromProvider();
 }
 
@@ -33854,6 +33880,40 @@ function paintAvatarPreview(){
   const name = (myProfile && myProfile.display_name) || (me && me.email ? me.email.split("@")[0] : "");
   el.innerHTML = pic ? `<img src="${pic}" alt="" referrerpolicy="no-referrer">` : initials(name);
 }
+
+/* ---------- delete my account ----------
+   Two warnings: a screen that says what goes, then typing DELETE. The account is
+   hidden at once and erased after 7 days (033_account_deletion.sql); signing in
+   again before then restores it (see refreshAccount). */
+function openDelete(){
+  closeProfile();
+  $("#delete-step1").hidden = false; $("#delete-step2").hidden = true;
+  $("#delete-word").value = ""; $("#delete-err").textContent = "";
+  $("#delete-sheet").classList.add("show");
+}
+function closeDelete(){ $("#delete-sheet").classList.remove("show"); }
+$("#profile-delete").addEventListener("click", openDelete);
+$("#delete-keep").addEventListener("click", closeDelete);
+$("#delete-cancel").addEventListener("click", closeDelete);
+$("#delete-sheet").addEventListener("click", e=>{ if(e.target.id === "delete-sheet") closeDelete(); });
+$("#delete-next").addEventListener("click", ()=>{
+  $("#delete-step1").hidden = true; $("#delete-step2").hidden = false;
+  $("#delete-word").focus();
+});
+$("#delete-word").addEventListener("input", ()=>{ $("#delete-err").textContent = ""; });
+$("#delete-go").addEventListener("click", async ()=>{
+  if($("#delete-word").value.trim().toUpperCase() !== "DELETE"){
+    $("#delete-err").textContent = "Type DELETE to confirm"; return;
+  }
+  const btn = $("#delete-go");
+  btn.disabled = true; btn.textContent = "Deleting…";
+  const { error } = await db.rpc("request_account_deletion");
+  btn.disabled = false; btn.textContent = "Delete my account";
+  if(error){ $("#delete-err").textContent = "Couldn't delete it. Try again."; return; }
+  closeDelete();
+  await db.auth.signOut();
+  toast("Account deleted. Sign in within 7 days to restore it.");
+});
 
 $("#profile-signout").addEventListener("click", async ()=>{
   await db.auth.signOut();
@@ -34267,13 +34327,14 @@ async function loadCircle(){
   const ids = (m.data||[]).map(r=>r.friend_id);
   const ech = (await db.from("echoes").select("id,from_user,code_id,created_at").eq("to_user", me.id).order("created_at",{ascending:false})).data || [];
   const want = [...new Set([...ids, ...ech.map(e=>e.from_user)])];
-  const profs = want.length ? ((await db.from("profiles").select("id,display_name,avatar_path,sigil").in("id", want)).data || []) : [];
+  const profs = want.length ? ((await db.from("profiles").select("id,display_name,avatar_path,sigil,delete_requested_at").in("id", want)).data || []) : [];
+  const gone = new Set(profs.filter(p=>p.delete_requested_at).map(p=>p.id));
   const pres  = ids.length ? ((await db.from("presence").select("user_id,session_number,kind,title,updated_at").in("user_id", ids)).data || []) : [];
   const pmap = Object.fromEntries(profs.map(p=>[p.id,p]));
   const fresh = r => r && r.title && (Date.now() - new Date(r.updated_at).getTime()) < 4*60e3;
-  circle.friends = ids.map(id => ({ id, p: pmap[id] || {display_name:"A friend"}, now: fresh(pres.find(x=>x.user_id===id)) ? pres.find(x=>x.user_id===id) : null }))
+  circle.friends = ids.filter(id=>!gone.has(id)).map(id => ({ id, p: pmap[id] || {display_name:"A friend"}, now: fresh(pres.find(x=>x.user_id===id)) ? pres.find(x=>x.user_id===id) : null }))
     .sort((a,b)=> (b.now?1:0)-(a.now?1:0));
-  circle.echoesIn = ech.map(e => ({...e, from:(pmap[e.from_user]||{}).display_name || "A friend", code:codeById(e.code_id)})).filter(e=>e.code);
+  circle.echoesIn = ech.filter(e=>!gone.has(e.from_user)).map(e => ({...e, from:(pmap[e.from_user]||{}).display_name || "A friend", code:codeById(e.code_id)})).filter(e=>e.code);
 }
 function circleHTML(){
   if(!me) return `<div class="circle-note">Sign in to build your Circle: invite friends, see who is listening, and echo Codes onto each other's cards.</div>
